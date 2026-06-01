@@ -5,13 +5,8 @@ const User = require('../models/User');
 
 // Helper: generate JWT
 const generateToken = (id) => {
-  let expire = process.env.JWT_EXPIRE || '7d';
-  // If the user accidentally set JWT_EXPIRE to just a number string like "7" in Render, 
-  // jsonwebtoken crashes because it expects a unit. We default it to '7d' if it's purely digits.
-  if (/^\d+$/.test(expire)) { expire = '7d'; }
-  
   return jwt.sign({ id }, process.env.JWT_SECRET || 'mardan_secret_key', {
-    expiresIn: expire,
+    expiresIn: '7d', // Hardcoded to 7d to prevent environment variable typos from crashing the server
   });
 };
 
