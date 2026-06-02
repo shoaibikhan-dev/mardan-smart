@@ -67,7 +67,7 @@ app.use((err, _req, res, _next) => {
 });
 
 // ── Start Server ─────────────────────────────────────────────────────────────
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
   console.log(`🏙️  Mardan Smart City API running on http://localhost:${PORT}`);
 });

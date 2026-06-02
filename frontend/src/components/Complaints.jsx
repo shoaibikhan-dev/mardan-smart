@@ -84,7 +84,7 @@ export default function Complaints() {
   const statusLabel = (s) => ({ pending: '⏳ Pending', in_progress: '🔄 In Progress', resolved: '✅ Resolved', rejected: '❌ Rejected' }[s] ?? s)
 
   return (
-    <section id="complaints" className="pt-12 pb-24 bg-surface-800 relative overflow-hidden scroll-mt-20">
+    <section id="complaints" className="py-12 bg-surface-800 relative overflow-hidden scroll-mt-20">
       {/* Ambient */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-64 bg-brand-800/15 rounded-full blur-3xl pointer-events-none" />
 

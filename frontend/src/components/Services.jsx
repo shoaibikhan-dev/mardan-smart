@@ -116,7 +116,7 @@ export default function Services() {
   const { ref, inView } = useInView({ threshold: 0.1, triggerOnce: true })
 
   return (
-    <section id="services" className="pt-12 pb-24 relative scroll-mt-20">
+    <section id="services" className="py-12 relative scroll-mt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div

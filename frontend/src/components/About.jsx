@@ -50,7 +50,7 @@ export default function About() {
   const { ref, inView } = useInView({ threshold: 0.1, triggerOnce: true })
 
   return (
-    <section id="about" className="pt-12 pb-24 relative overflow-hidden scroll-mt-20">
+    <section id="about" className="py-12 relative overflow-hidden scroll-mt-20">
       {/* Dot grid */}
       <div className="absolute inset-0 dot-grid opacity-20 pointer-events-none" />
       <div className="absolute top-1/3 right-0 w-[500px] h-[500px] bg-emerald-800/10 rounded-full blur-3xl pointer-events-none" />

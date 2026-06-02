@@ -88,19 +88,7 @@ export default function Navbar({ darkMode, setDarkMode }) {
 
           {/* ── Right Actions ───────────────────────────────── */}
           <div className="hidden lg:flex items-center gap-3">
-            {/* Dark mode toggle */}
-            <button
-              onClick={() => setDarkMode(!darkMode)}
-              className="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-lg transition-all duration-200 hover:scale-110"
-              title="Toggle dark mode"
-            >
-              {darkMode ? '☀️' : '🌙'}
-            </button>
 
-            <a href="#complaints" className="btn-outline text-sm px-5 py-2.5 flex items-center gap-2">
-              <FileText className="w-4 h-4" />
-              File Complaint
-            </a>
 
             {isAuthenticated ? (
               <div className="flex items-center gap-4 ml-2 pl-4 border-l border-white/10">

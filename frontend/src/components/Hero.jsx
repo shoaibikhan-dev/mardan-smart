@@ -36,12 +36,7 @@ export default function Hero() {
   }
 
   return (
-    <section
-      id="home"
-      ref={heroRef}
-      onMouseMove={handleMouseMove}
-      className="relative min-h-screen flex items-center overflow-hidden"
-    >
+    <section id="home" ref={heroRef} onMouseMove={handleMouseMove} className="relative pt-32 pb-48 flex items-center justify-center overflow-hidden scroll-mt-20">
       {/* ── Background Image Slideshow ─────────────────────── */}
       {backgroundImages.map((src, index) => (
         <div

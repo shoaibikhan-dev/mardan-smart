@@ -136,7 +136,7 @@ export default function Emergency() {
   const { ref, inView } = useInView({ threshold: 0.1, triggerOnce: true })
 
   return (
-    <section id="emergency" className="pt-12 pb-24 relative overflow-hidden scroll-mt-20">
+    <section id="emergency" className="py-12 relative overflow-hidden scroll-mt-20">
       {/* Red ambient glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-red-900/10 rounded-full blur-3xl pointer-events-none" />
 
