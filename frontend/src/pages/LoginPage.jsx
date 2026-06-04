@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
@@ -12,6 +12,14 @@ export default function LoginPage() {
   const [error,   setError]   = useState('')
   const [loading, setLoading] = useState(false)
   const [showPw,  setShowPw]  = useState(false)
+  const [currentImg, setCurrentImg] = useState(0)
+
+  const bgImages = ['/pic-1.png', '/pic-2.png', '/pic-3.png', '/pic-4.png']
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentImg(p => (p + 1) % bgImages.length), 5000)
+    return () => clearInterval(timer)
+  }, [])
 
   const handleChange = (e) => {
     setError('')
@@ -38,12 +46,12 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-[#241e30] flex">
       {/* ── Left Panel (Image & Branding) ────────────────────── */}
-      <div 
-        className="hidden lg:flex w-1/2 relative flex-col justify-between p-12 bg-cover bg-center" 
-        style={{ backgroundImage: "url('/pic-2.png')" }}
-      >
-        <div className="absolute inset-0 bg-[#241e30]/50 mix-blend-multiply" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#241e30]/90 via-transparent to-[#241e30]/30" />
+      <div className="hidden lg:flex w-1/2 relative flex-col justify-between p-10 overflow-hidden">
+        {bgImages.map((src, i) => (
+          <div key={src} className={`absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ${i === currentImg ? 'opacity-100' : 'opacity-0'}`} style={{ backgroundImage: `url('${src}')` }} />
+        ))}
+        <div className="absolute inset-0 bg-[#241e30]/50 mix-blend-multiply z-0" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#241e30]/90 via-transparent to-[#241e30]/30 z-0" />
         
         {/* Top bar */}
         <div className="relative z-10 flex items-center justify-between">
@@ -72,15 +80,15 @@ export default function LoginPage() {
       </div>
 
       {/* ── Right Panel (Form) ─────────────────────────────────── */}
-      <div className="w-full lg:w-1/2 flex flex-col justify-center px-8 sm:px-16 lg:px-24 py-12 relative overflow-y-auto">
+      <div className="w-full lg:w-1/2 flex flex-col justify-center px-8 sm:px-12 lg:px-20 py-8 relative">
         {/* Mobile back button */}
-        <Link to="/" className="lg:hidden absolute top-8 right-8 text-white/50 hover:text-white transition-colors text-sm flex items-center gap-2">
+        <Link to="/" className="lg:hidden absolute top-6 right-6 text-white/50 hover:text-white transition-colors text-sm flex items-center gap-2 z-10">
           <span>✕</span> Close
         </Link>
 
         <div className="w-full max-w-md mx-auto">
-          <h1 className="text-white font-display font-medium text-4xl mb-2 tracking-tight">Log in</h1>
-          <p className="text-white/50 text-base mb-10">
+          <h1 className="text-white font-display font-medium text-3xl mb-1 tracking-tight">Log in</h1>
+          <p className="text-white/50 text-sm mb-6">
             Don't have an account?{' '}
             <Link to="/register" className="text-brand-400 hover:text-brand-300 hover:underline transition-colors underline-offset-4">
               Register here
@@ -95,10 +103,9 @@ export default function LoginPage() {
             </div>
           )}
 
-          {/* Demo Credentials */}
-          <div className="mb-6 rounded-xl border border-white/10 bg-white/[0.02] p-4">
-            <p className="text-white/70 text-xs font-semibold mb-3 tracking-wider uppercase">Demo Credentials</p>
-            <div className="flex flex-col gap-2 text-sm text-white/50 font-mono">
+          <div className="mb-4 rounded-xl border border-white/10 bg-white/[0.02] p-3">
+            <p className="text-white/70 text-[10px] font-semibold mb-2 tracking-wider uppercase">Demo Credentials</p>
+            <div className="flex flex-col gap-1 text-xs text-white/50 font-mono">
               <div className="flex justify-between items-center">
                 <span>Email:</span>
                 <button
@@ -116,7 +123,7 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+          <form onSubmit={handleSubmit} className="space-y-3.5" noValidate>
             
             {/* Email */}
             <div>
@@ -128,7 +135,7 @@ export default function LoginPage() {
                 value={form.email}
                 onChange={handleChange}
                 disabled={loading}
-                className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-white/30 text-sm focus:outline-none focus:border-brand-500/60 focus:bg-brand-500/5 transition disabled:opacity-50"
+                className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 text-sm focus:outline-none focus:border-brand-500/60 focus:bg-brand-500/5 transition disabled:opacity-50"
               />
             </div>
 
@@ -142,7 +149,7 @@ export default function LoginPage() {
                 value={form.password}
                 onChange={handleChange}
                 disabled={loading}
-                className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-white/30 text-sm focus:outline-none focus:border-brand-500/60 focus:bg-brand-500/5 transition disabled:opacity-50 pr-12"
+                className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 text-sm focus:outline-none focus:border-brand-500/60 focus:bg-brand-500/5 transition disabled:opacity-50 pr-12"
               />
               <button
                 type="button"
@@ -155,17 +162,17 @@ export default function LoginPage() {
             </div>
 
             {/* Remember Me / Forgot Password */}
-            <div className="flex items-center justify-between mt-6">
-              <label className="flex items-center gap-3 cursor-pointer group">
+            <div className="flex items-center justify-between mt-4">
+              <label className="flex items-center gap-2 cursor-pointer group">
                 <div className="relative flex-shrink-0">
                   <input type="checkbox" className="sr-only" defaultChecked />
-                  <div className="w-5 h-5 rounded flex items-center justify-center transition-all border bg-brand-500 border-brand-500">
-                    <span className="text-white text-xs">✓</span>
+                  <div className="w-4 h-4 rounded flex items-center justify-center transition-all border bg-brand-500 border-brand-500">
+                    <span className="text-white text-[10px]">✓</span>
                   </div>
                 </div>
-                <span className="text-white/70 text-sm">Remember me</span>
+                <span className="text-white/70 text-xs">Remember me</span>
               </label>
-              <a href="#" className="text-sm text-brand-400 hover:text-brand-300 hover:underline underline-offset-2 transition-colors">
+              <a href="#" className="text-xs text-brand-400 hover:text-brand-300 hover:underline underline-offset-2 transition-colors">
                 Forgot password?
               </a>
             </div>
@@ -174,7 +181,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-xl py-4 text-sm font-semibold text-white transition-all disabled:opacity-60 disabled:cursor-not-allowed mt-4 hover:bg-brand-400 bg-brand-500"
+              className="w-full rounded-xl py-3 text-sm font-semibold text-white transition-all disabled:opacity-60 disabled:cursor-not-allowed mt-4 hover:bg-brand-400 bg-brand-500"
               style={{
                 boxShadow: loading ? 'none' : '0 4px 14px 0 rgba(139, 92, 246, 0.39)',
               }}
@@ -189,23 +196,6 @@ export default function LoginPage() {
               )}
             </button>
           </form>
-
-          {/* Divider */}
-          <div className="flex items-center gap-4 my-8">
-            <div className="flex-1 h-px bg-white/10" />
-            <span className="text-white/30 text-xs font-medium">Or log in with</span>
-            <div className="flex-1 h-px bg-white/10" />
-          </div>
-
-          {/* Social Logins */}
-          <div className="grid grid-cols-2 gap-4">
-            <button type="button" className="flex items-center justify-center gap-2 py-3 rounded-xl border border-white/10 bg-transparent hover:bg-white/5 transition-colors text-sm font-medium text-white">
-              <span className="text-lg leading-none">🇬</span> Google
-            </button>
-            <button type="button" className="flex items-center justify-center gap-2 py-3 rounded-xl border border-white/10 bg-transparent hover:bg-white/5 transition-colors text-sm font-medium text-white">
-              <span className="text-lg leading-none">🍎</span> Apple
-            </button>
-          </div>
 
         </div>
       </div>
