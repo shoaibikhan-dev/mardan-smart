@@ -5,21 +5,37 @@ metadata:
   namespace: mardan-smart-city
   labels:
     app: redis
+    tier: cache
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: redis
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
   template:
     metadata:
       labels:
         app: redis
+        tier: cache
     spec:
       containers:
       - name: redis
         image: redis:7-alpine
         ports:
         - containerPort: 6379
+          name: redis
+        command:
+        - redis-server
+        - "--maxmemory"
+        - "200mb"
+        - "--maxmemory-policy"
+        - "allkeys-lru"
+        - "--appendonly"
+        - "yes"
         resources:
           requests:
             cpu: "50m"
@@ -27,3 +43,23 @@ spec:
           limits:
             cpu: "200m"
             memory: "256Mi"
+        volumeMounts:
+        - name: redis-data
+          mountPath: /data
+        # Readiness: only route when redis can respond to PING
+        readinessProbe:
+          exec:
+            command: ["redis-cli", "ping"]
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        # Liveness: restart if redis becomes unresponsive
+        livenessProbe:
+          exec:
+            command: ["redis-cli", "ping"]
+          initialDelaySeconds: 15
+          periodSeconds: 20
+          failureThreshold: 3
+      volumes:
+      - name: redis-data
+        persistentVolumeClaim:
+          claimName: redis-pvc

@@ -3,6 +3,10 @@ kind: Service
 metadata:
   name: mardan-backend
   namespace: mardan-smart-city
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/path: "/api/metrics"
+    prometheus.io/port: "5000"
 spec:
   selector:
     app: backend

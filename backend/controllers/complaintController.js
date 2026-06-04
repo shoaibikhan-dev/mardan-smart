@@ -180,7 +180,7 @@ exports.getUserComplaints = async (req, res) => {
 exports.getStats = async (req, res) => {
   try {
     const { Op, fn, col, literal } = require('sequelize');
-    const where = req.user.role === 'citizen' ? { userId: req.user.id } : {};
+    const where = req.user && req.user.role === 'citizen' ? { userId: req.user.id } : {};
 
     const [total, pending, inProgress, resolved, rejected] = await Promise.all([
       Complaint.count({ where }),

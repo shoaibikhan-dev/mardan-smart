@@ -5,15 +5,23 @@ metadata:
   namespace: mardan-smart-city
   labels:
     app: frontend
+    tier: frontend
+    version: "1.0"
 spec:
   replicas: 2
   selector:
     matchLabels:
       app: frontend
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0   # Zero-downtime: never kill a pod before new one is ready
   template:
     metadata:
       labels:
         app: frontend
+        tier: frontend
     spec:
       containers:
       - name: frontend
@@ -21,6 +29,7 @@ spec:
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 80
+          name: http
         resources:
           requests:
             cpu: "100m"
@@ -28,3 +37,20 @@ spec:
           limits:
             cpu: "250m"
             memory: "256Mi"
+        # Readiness: only route traffic to this pod when nginx is up
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          failureThreshold: 3
+        # Liveness: restart if nginx hangs
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 15
+          periodSeconds: 30
+          failureThreshold: 3
+          timeoutSeconds: 5

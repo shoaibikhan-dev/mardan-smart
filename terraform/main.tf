@@ -59,6 +59,14 @@ resource "aws_security_group" "k3s_sg" {
     self      = true
   }
 
+  # Allow SSH from anywhere (for administration)
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -67,11 +75,18 @@ resource "aws_security_group" "k3s_sg" {
   }
 }
 
+resource "aws_key_pair" "k3s_key" {
+  key_name   = "mardan-k3s-key"
+  # Requires the user to have generated an SSH key locally before running terraform apply
+  public_key = file("~/.ssh/id_rsa.pub")
+}
+
 # ── Basic EC2 Instances for K3s (Zero-Cost Orchestrator) ───────────────────────
 resource "aws_instance" "k3s_nodes" {
   count         = 3
   ami           = "ami-0c7217cdde317cfec" # Ubuntu 22.04 LTS
   instance_type = "t3.large"              # Cost-effective general purpose compute
+  key_name      = aws_key_pair.k3s_key.key_name
 
   subnet_id                   = module.vpc.public_subnets[count.index % 2]
   vpc_security_group_ids      = [aws_security_group.k3s_sg.id]

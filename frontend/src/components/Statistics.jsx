@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import axios from 'axios'
 import { useInView } from 'react-intersection-observer'
 
 // ── Custom count-up hook (no external dependency, highly performant) ──────────
@@ -31,13 +32,14 @@ function useCountUp(end, duration = 2000, started = false) {
 }
 
 // ── Stats data ───────────────────────────────────────────────────────────────
-const stats = [
-  { icon: '📋', value: 1248,  suffix: '+', label: 'Total Complaints',    sub: 'Received in 2024',        color: 'from-brand-500 to-brand-700'   },
-  { icon: '✅', value: 986,   suffix: '',  label: 'Complaints Resolved', sub: 'Successfully closed',      color: 'from-gold-400 to-gold-600'},
-  { icon: '⚡', value: 48,    suffix: 'h', label: 'Avg. Response Time',  sub: 'Hours to first action',    color: 'from-gold-500 to-gold-600'     },
-  { icon: '🏢', value: 12,    suffix: '',  label: 'City Departments',    sub: 'Working together',         color: 'from-purple-500 to-purple-700' },
-  { icon: '👥', value: 24800, suffix: '+', label: 'Registered Citizens', sub: 'Active users on platform', color: 'from-pink-500 to-rose-600'     },
-  { icon: '📈', value: 94,    suffix: '%', label: 'Satisfaction Rate',   sub: 'Citizen happiness score',  color: 'from-cyan-500 to-sky-600'      },
+// Default fallback stats structure
+const baseStats = [
+  { icon: '📋', id: 'total', value: 0,  suffix: '+', label: 'Total Complaints',    sub: 'Received in 2024',        color: 'from-brand-500 to-brand-700'   },
+  { icon: '✅', id: 'resolved', value: 0,   suffix: '',  label: 'Complaints Resolved', sub: 'Successfully closed',      color: 'from-gold-400 to-gold-600'},
+  { icon: '⚡', id: 'response', value: 48,    suffix: 'h', label: 'Avg. Response Time',  sub: 'Hours to first action',    color: 'from-gold-500 to-gold-600'     },
+  { icon: '🏢', id: 'departments', value: 12,    suffix: '',  label: 'City Departments',    sub: 'Working together',         color: 'from-purple-500 to-purple-700' },
+  { icon: '👥', id: 'citizens', value: 24800, suffix: '+', label: 'Registered Citizens', sub: 'Active users on platform', color: 'from-pink-500 to-rose-600'     },
+  { icon: '📈', id: 'rate', value: 0,    suffix: '%', label: 'Resolution Rate',   sub: 'Complaints resolved',  color: 'from-cyan-500 to-sky-600'      },
 ]
 
 // ── Stat Card ─────────────────────────────────────────────────────────────────
@@ -74,6 +76,35 @@ function StatCard({ stat, index }) {
 // ── Main export ───────────────────────────────────────────────────────────────
 export default function Statistics() {
   const { ref, inView } = useInView({ threshold: 0.1, triggerOnce: true })
+  const [stats, setStats] = useState(baseStats)
+  const [lastSync, setLastSync] = useState(new Date())
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await axios.get((import.meta.env.VITE_API_BASE_URL || '/api') + '/complaints/public-stats')
+        if (res.data.success) {
+          const { total, resolved } = res.data.data
+          const resolutionRate = total > 0 ? Math.round((resolved / total) * 100) : 0
+          
+          setStats(baseStats.map(s => {
+            if (s.id === 'total') return { ...s, value: total }
+            if (s.id === 'resolved') return { ...s, value: resolved }
+            if (s.id === 'rate') return { ...s, value: resolutionRate }
+            return s
+          }))
+          setLastSync(new Date())
+        }
+      } catch (err) {
+        console.error('Failed to fetch live stats', err)
+      }
+    }
+    
+    // Only fetch when scrolled into view
+    if (inView) {
+      fetchStats()
+    }
+  }, [inView])
 
   return (
     <section id="statistics" className="py-12 relative overflow-hidden scroll-mt-20">
@@ -104,7 +135,7 @@ export default function Statistics() {
           <div className="flex items-center gap-3">
             <div className="w-3 h-3 bg-gold-400 rounded-full animate-ping-slow shadow-[0_0_8px_#fbbf24]" />
             <p className="text-white/80 text-sm tracking-wide">
-              Data updated <span className="text-gold-400 font-bold">live</span> — Last sync: {new Date().toLocaleString('en-PK', { timeZone: 'Asia/Karachi' })}
+              Data updated <span className="text-gold-400 font-bold">live</span> — Last sync: {lastSync.toLocaleString('en-PK', { timeZone: 'Asia/Karachi' })}
             </p>
           </div>
           <a href="#" className="text-brand-400 text-sm font-semibold hover:text-brand-300 transition flex items-center gap-1">

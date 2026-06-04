@@ -32,7 +32,10 @@ jobs:
         working-directory: ./backend
         run: npm ci
 
-      - name: Syntax Check Backend
+      - name: Security Audit Backend
         working-directory: ./backend
-        run: |
-          find . -name "*.js" -not -path "./node_modules/*" | xargs -n1 node --check
+        run: npm audit --audit-level=high
+
+      - name: Lint Frontend
+        working-directory: ./frontend
+        run: npm run lint

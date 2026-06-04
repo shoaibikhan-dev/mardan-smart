@@ -8,3 +8,8 @@ data:
   PORT: "5000"
   JWT_EXPIRE: "7d"
   REDIS_URL: "redis://redis:6379"
+  DB_HOST: "postgres"
+  DB_PORT: "5432"
+  DB_NAME: "mardan_smart_city"
+  DB_USER: "postgres"
+  CLIENT_URL: "http://localhost"

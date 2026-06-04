@@ -20,13 +20,15 @@ jobs:
 
       - name: Build & Push Backend Docker Image
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/mardan-backend:latest ./backend
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/mardan-backend:latest -t ${{ secrets.DOCKER_USERNAME }}/mardan-backend:${{ github.sha }} ./backend
           docker push ${{ secrets.DOCKER_USERNAME }}/mardan-backend:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/mardan-backend:${{ github.sha }}
 
       - name: Build & Push Frontend Docker Image
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/mardan-frontend:latest ./frontend
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/mardan-frontend:latest -t ${{ secrets.DOCKER_USERNAME }}/mardan-frontend:${{ github.sha }} ./frontend
           docker push ${{ secrets.DOCKER_USERNAME }}/mardan-frontend:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/mardan-frontend:${{ github.sha }}
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -35,13 +37,17 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - name: Update Kubernetes Kubeconfig
-        run: aws eks update-kubeconfig --name mardan-cluster --region us-east-1
+      - name: Setup Kubeconfig for K3s
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBECONFIG }}" > ~/.kube/config
+          chmod 600 ~/.kube/config
 
       - name: Apply Kubernetes Manifests (Zero-Downtime Rollout)
         run: |
+          # Ensure kustomize is applied
           kubectl apply -k k3s/
           
           # Force deployment restart to pull newest images
-          kubectl rollout restart deployment mardan-backend -n mardan-city
-          kubectl rollout restart deployment mardan-frontend -n mardan-city
+          kubectl set image deployment/backend backend=${{ secrets.DOCKER_USERNAME }}/mardan-backend:${{ github.sha }} -n mardan-smart-city
+          kubectl set image deployment/frontend frontend=${{ secrets.DOCKER_USERNAME }}/mardan-frontend:${{ github.sha }} -n mardan-smart-city

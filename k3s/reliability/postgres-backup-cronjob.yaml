@@ -1,0 +1,30 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: postgres-backup
+  namespace: mardan-smart-city
+spec:
+  schedule: "0 2 * * *" # Run at 2:00 AM every day
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: pg-backup
+            image: postgres:15-alpine
+            command:
+            - /bin/sh
+            - -c
+            - "export PGPASSWORD=$POSTGRES_PASSWORD && pg_dump -U $POSTGRES_USER -h postgres -d $POSTGRES_DB -F c -f /backup/db_backup_$(date +%Y%m%d).dump"
+            envFrom:
+            - secretRef:
+                name: postgres-secrets
+            volumeMounts:
+            - name: backup-storage
+              mountPath: /backup
+          restartPolicy: OnFailure
+          volumes:
+          - name: backup-storage
+            persistentVolumeClaim:
+              claimName: postgres-pvc

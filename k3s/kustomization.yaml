@@ -1,0 +1,29 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - namespace.yaml
+  - config/backend-config.yaml
+  - secrets/backend-secrets.yaml
+  - secrets/postgres-secrets.yaml
+  - storage/postgres-pvc.yaml
+  - storage/redis-pvc.yaml
+  - security/service-accounts.yaml
+  - security/roles.yaml
+  - security/role-bindings.yaml
+  - observability/grafana-deployment.yaml
+  - policies/default-deny.yaml
+  - reliability/backend-pdb.yaml
+  - reliability/frontend-pdb.yaml
+  - reliability/postgres-backup-cronjob.yaml
+  - deployments/postgres-deployment.yaml
+  - deployments/redis-deployment.yaml
+  - deployments/backend-deployment.yaml
+  - deployments/frontend-deployment.yaml
+  - services/postgres-service.yaml
+  - services/redis-service.yaml
+  - services/backend-service.yaml
+  - services/frontend-service.yaml
+  - ingress/main-ingress.yaml
+  - autoscaling/backend-hpa.yaml
+  - autoscaling/frontend-hpa.yaml
+  - config/postgres-init-configmap.yaml

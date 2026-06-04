@@ -45,8 +45,8 @@ exports.register = async (req, res) => {
       user: { id: user.id, name: user.name, email: user.email, role: user.role },
     });
   } catch (error) {
-    console.error('Registration Database Error:', error);
-    res.status(500).json({ success: false, message: `Database/Server Error: ${error.message}` });
+    console.error(`[Register] Error for ${email}:`, error.message);
+    res.status(500).json({ success: false, message: 'Registration failed. Please try again later.' });
   }
 };
 
@@ -73,7 +73,8 @@ exports.login = async (req, res) => {
       user: { id: user.id, name: user.name, email: user.email, role: user.role },
     });
   } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+    console.error(`[Login] Error for ${email}:`, err.message);
+    res.status(500).json({ success: false, message: 'Login failed. Please try again later.' });
   }
 };
 

@@ -13,8 +13,9 @@ const {
 const { protect, adminOnly } = require('../middleware/authMiddleware');
 const upload = require('../middleware/uploadMiddleware');
 
-// Public - track complaint by tracking ID
+// Public routes
 router.get('/track/:trackingId', trackComplaint);
+router.get('/public-stats', getStats);
 
 // Citizen routes (protected)
 router.post('/',        protect, upload.single('image'), createComplaint);
