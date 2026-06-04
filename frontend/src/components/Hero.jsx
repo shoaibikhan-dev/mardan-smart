@@ -40,7 +40,7 @@ export default function Hero() {
   }
 
   return (
-    <section id="home" ref={heroRef} onMouseMove={handleMouseMove} className="relative pt-32 pb-48 flex items-center justify-center overflow-hidden scroll-mt-20">
+    <section id="home" ref={heroRef} onMouseMove={handleMouseMove} className="relative pt-24 pb-24 flex items-center justify-center overflow-hidden scroll-mt-20">
       {/* ── Background Image Slideshow ─────────────────────── */}
       {backgroundImages.map((src, index) => (
         <div
@@ -63,7 +63,7 @@ export default function Hero() {
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-brand-700/10 rounded-full blur-3xl pointer-events-none" />
 
       {/* ── Content ────────────────────────────────────────── */}
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-32">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-16">
         <div className="max-w-3xl">
 
           {/* Badge */}

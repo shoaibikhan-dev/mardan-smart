@@ -116,12 +116,12 @@ export default function Services() {
   const { ref, inView } = useInView({ threshold: 0.1, triggerOnce: true })
 
   return (
-    <section id="services" className="py-12 relative scroll-mt-20">
+    <section id="services" className="py-8 relative scroll-mt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div
           ref={ref}
-          className={`text-center mb-16 transition-all duration-700 ${inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+          className={`text-center mb-10 transition-all duration-700 ${inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
         >
           <span className="section-badge mb-5 shadow-brand">🛠️ City Services</span>
           <h2 className="font-display text-4xl sm:text-5xl font-black text-white mb-5">
@@ -141,7 +141,7 @@ export default function Services() {
         </div>
 
         {/* CTA Banner */}
-        <div className={`mt-12 transition-all duration-700 delay-300 ${inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+        <div className={`mt-8 transition-all duration-700 delay-300 ${inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           <div className="glass-card neon-border p-8 flex flex-col sm:flex-row items-center justify-between gap-6">
             <div>
               <h3 className="text-white font-bold text-xl mb-1">Don't see your issue?</h3>

@@ -107,13 +107,13 @@ export default function Statistics() {
   }, [inView])
 
   return (
-    <section id="statistics" className="py-12 relative overflow-hidden scroll-mt-20">
+    <section id="statistics" className="py-8 relative overflow-hidden scroll-mt-20">
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-brand-800/15 rounded-full blur-3xl pointer-events-none" />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div
           ref={ref}
-          className={`text-center mb-16 transition-all duration-700 ${inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+          className={`text-center mb-10 transition-all duration-700 ${inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
         >
           <span className="section-badge mb-5 shadow-brand">📊 Live City Data</span>
           <h2 className="font-display text-4xl sm:text-5xl font-black text-white mb-5">
@@ -131,7 +131,7 @@ export default function Statistics() {
           ))}
         </div>
 
-        <div className={`mt-12 glass-card neon-border p-6 flex flex-col sm:flex-row items-center justify-between gap-4 transition-all duration-700 delay-500 ${inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+        <div className={`mt-8 glass-card neon-border p-6 flex flex-col sm:flex-row items-center justify-between gap-4 transition-all duration-700 delay-500 ${inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           <div className="flex items-center gap-3">
             <div className="w-3 h-3 bg-gold-400 rounded-full animate-ping-slow shadow-[0_0_8px_#fbbf24]" />
             <p className="text-white/80 text-sm tracking-wide">

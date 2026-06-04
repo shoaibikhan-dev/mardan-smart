@@ -50,7 +50,7 @@ export default function About() {
   const { ref, inView } = useInView({ threshold: 0.1, triggerOnce: true })
 
   return (
-    <section id="about" className="py-12 relative overflow-hidden scroll-mt-20">
+    <section id="about" className="py-8 relative overflow-hidden scroll-mt-20">
       {/* Dot grid */}
       <div className="absolute inset-0 dot-grid opacity-20 pointer-events-none" />
       <div className="absolute top-1/3 right-0 w-[500px] h-[500px] bg-emerald-800/10 rounded-full blur-3xl pointer-events-none" />
@@ -60,7 +60,7 @@ export default function About() {
         {/* Features Grid */}
         <div
           ref={ref}
-          className={`text-center mb-16 transition-all duration-700 ${inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+          className={`text-center mb-10 transition-all duration-700 ${inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
         >
           <span className="section-badge mb-5">✨ Platform Features</span>
           <h2 className="font-display text-4xl sm:text-5xl font-black text-white mb-5">
@@ -72,7 +72,7 @@ export default function About() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-24">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
           {features.map((f, i) => (
             <div
               key={f.title}
