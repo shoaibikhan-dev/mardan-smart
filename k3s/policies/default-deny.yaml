@@ -7,7 +7,6 @@ spec:
   podSelector: {}
   policyTypes:
   - Ingress
-  - Egress
   egress:
   - ports:
     - port: 53

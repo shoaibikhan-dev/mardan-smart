@@ -4,10 +4,11 @@ const morgan     = require('morgan');
 const path       = require('path');
 const rateLimit  = require('express-rate-limit');
 const promClient = require('prom-client');
+const compression = require('compression');
 require('dotenv').config();
 
 const { connectDB } = require('./config/db');
-
+const { connectRedis } = require('./config/redis');
 const app = express();
 
 // ── Prometheus: collect BEFORE any routes so all metrics are captured ─────────
@@ -15,6 +16,10 @@ promClient.collectDefaultMetrics({ prefix: 'msc_' });
 
 // Connect Database
 connectDB();
+connectRedis();
+
+// ── Gzip Compression ──────────────────────────────────────────────────────────
+app.use(compression());
 
 // ── CORS (Custom bulletproof middleware) ──────────────────────────────────────
 app.use((req, res, next) => {
@@ -28,8 +33,8 @@ app.use((req, res, next) => {
 
 // ── Security ──────────────────────────────────────────────────────────────────
 app.use(helmet({
-  crossOriginResourcePolicy: false, // Allow CORS headers to pass through
-  contentSecurityPolicy: false,     // Managed separately per environment
+  crossOriginResourcePolicy: false,
+  contentSecurityPolicy: false,
 }));
 
 // ── Logging ───────────────────────────────────────────────────────────────────
@@ -41,7 +46,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // ── Rate Limiters ─────────────────────────────────────────────────────────────
 const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
+  windowMs: 15 * 60 * 1000,
   max: 5,
   message: { success: false, message: 'Too many login attempts. Please try again in 15 minutes.' },
   standardHeaders: true,
@@ -49,7 +54,7 @@ const loginLimiter = rateLimit({
 });
 
 const registerLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour
+  windowMs: 60 * 60 * 1000,
   max: 3,
   message: { success: false, message: 'Too many registration attempts. Please try again in 1 hour.' },
   standardHeaders: true,
@@ -66,7 +71,6 @@ const userRoutes         = require('./routes/userRoutes');
 const categoryRoutes     = require('./routes/categoryRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 
-// Apply rate limiters to auth-specific routes BEFORE mounting the router
 app.post('/api/auth/login',    loginLimiter);
 app.post('/api/auth/register', registerLimiter);
 
@@ -100,7 +104,6 @@ app.use((_req, res) => {
 
 // ── Global Error Handler ──────────────────────────────────────────────────────
 app.use((err, _req, res, _next) => {
-  // Log full error server-side only — never expose internals to clients
   console.error(`[${new Date().toISOString()}] ERROR:`, err.stack);
   res.status(err.status || 500).json({
     success: false,

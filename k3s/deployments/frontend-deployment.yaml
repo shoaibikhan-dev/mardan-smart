@@ -16,7 +16,7 @@ spec:
     type: RollingUpdate
     rollingUpdate:
       maxSurge: 1
-      maxUnavailable: 0   # Zero-downtime: never kill a pod before new one is ready
+      maxUnavailable: 0
   template:
     metadata:
       labels:
@@ -25,11 +25,14 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: phase1-frontend:latest
+        image: shoaibikhandev/mardan-frontend
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 80
           name: http
+        env:
+        - name: NEXT_PUBLIC_API_URL
+          value: "http://localhost:31724"
         resources:
           requests:
             cpu: "100m"
@@ -37,7 +40,6 @@ spec:
           limits:
             cpu: "250m"
             memory: "256Mi"
-        # Readiness: only route traffic to this pod when nginx is up
         readinessProbe:
           httpGet:
             path: /
@@ -45,7 +47,6 @@ spec:
           initialDelaySeconds: 5
           periodSeconds: 10
           failureThreshold: 3
-        # Liveness: restart if nginx hangs
         livenessProbe:
           httpGet:
             path: /

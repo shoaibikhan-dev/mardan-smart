@@ -1,13 +1,10 @@
 const { Sequelize } = require('sequelize');
 require('dotenv').config();
-
 let sequelize;
-
 if (process.env.DATABASE_URL) {
   const isNeon =
     process.env.DATABASE_URL.includes("neon.tech") ||
     process.env.DATABASE_URL.includes("sslmode=require");
-
   sequelize = new Sequelize(process.env.DATABASE_URL, {
     dialect: 'postgres',
     dialectOptions: {
@@ -16,10 +13,9 @@ if (process.env.DATABASE_URL) {
         : { require: true, rejectUnauthorized: false },
     },
     logging: false,
-    pool: { max: 10, min: 2, acquire: 30000, idle: 10000 },
+    pool: { max: 20, min: 4, acquire: 60000, idle: 10000 },
   });
 } else {
-  // Local/Docker Compose environment — uses separate variables
   sequelize = new Sequelize(
     process.env.DB_NAME     || 'mardan_smart_city',
     process.env.DB_USER     || 'postgres',
@@ -29,27 +25,22 @@ if (process.env.DATABASE_URL) {
       port:    parseInt(process.env.DB_PORT || '5432'),
       dialect: 'postgres',
       logging: false,
-      pool: { max: 10, min: 2, acquire: 30000, idle: 10000 },
+      pool: { max: 20, min: 4, acquire: 60000, idle: 10000 },
     }
   );
 }
-
-// ── Connection with Retry Logic ───────────────────────────────────────────────
 const connectDB = async (retries = 5, delay = 3000) => {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       await sequelize.authenticate();
       console.log('✅ Database connected successfully');
-      // NOTE: Schema is managed via database/schema.sql — no auto-sync.
-      // sequelize.sync() is intentionally NOT called here to prevent
-      // schema drift between Sequelize models and the SQL schema file.
       return;
     } catch (error) {
       console.error(`❌ Database connection attempt ${attempt}/${retries} failed:`, error.message);
       if (attempt < retries) {
         console.log(`⏳ Retrying in ${delay / 1000}s...`);
         await new Promise((res) => setTimeout(res, delay));
-        delay *= 1.5; // exponential backoff
+        delay *= 1.5;
       } else {
         console.error('❌ All database connection attempts failed. Exiting.');
         process.exit(1);
@@ -57,5 +48,4 @@ const connectDB = async (retries = 5, delay = 3000) => {
     }
   }
 };
-
 module.exports = { sequelize, connectDB };

@@ -19,6 +19,26 @@ spec:
       containers:
       - name: postgres
         image: postgres:15-alpine
+        args:
+          - "postgres"
+          - "-c"
+          - "max_connections=200"
+          - "-c"
+          - "shared_buffers=2GB"
+          - "-c"
+          - "work_mem=16MB"
+          - "-c"
+          - "effective_cache_size=8GB"
+          - "-c"
+          - "maintenance_work_mem=512MB"
+          - "-c"
+          - "checkpoint_completion_target=0.9"
+          - "-c"
+          - "wal_buffers=64MB"
+          - "-c"
+          - "random_page_cost=1.1"
+          - "-c"
+          - "effective_io_concurrency=200"
         ports:
         - containerPort: 5432
         envFrom:
@@ -38,11 +58,11 @@ spec:
           mountPath: /docker-entrypoint-initdb.d
         resources:
           requests:
-            cpu: "250m"
-            memory: "512Mi"
-          limits:
             cpu: "500m"
-            memory: "1Gi"
+            memory: "2Gi"
+          limits:
+            cpu: "1000m"
+            memory: "3Gi"
       volumes:
       - name: init-scripts
         configMap:

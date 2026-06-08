@@ -5,9 +5,16 @@ metadata:
   namespace: mardan-smart-city
   annotations:
     kubernetes.io/ingress.class: "traefik"
+    traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
 spec:
+  tls:
+  - hosts:
+    - mardan.local
+    secretName: mardan-tls
   rules:
-  - http:
+  - host: mardan.local
+    http:
       paths:
       - path: /api
         pathType: Prefix
