@@ -25,7 +25,7 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: shoaibikhandev/mardan-frontend:ed2269348e83ec9e93280be3f352830647e6d506
+        image: shoaibikhandev/mardan-frontend:574b7ba96244d76ee6cc104be499f0a4b7c1af5b
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 80
