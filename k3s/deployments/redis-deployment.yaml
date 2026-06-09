@@ -32,6 +32,8 @@ spec:
         - redis-server
         - "--maxmemory"
         - "200mb"
+        - "--requirepass"
+        - "mardan_redis_2026_secure"
         - "--maxmemory-policy"
         - "allkeys-lru"
         - "--appendonly"
