@@ -43,7 +43,7 @@ spec:
             cpu: "100m"
             memory: "256Mi"
           limits:
-            cpu: "1000m"
+            cpu: "500m"
             memory: "512Mi"
         # Startup: give slow-starting container time before liveness kicks in
         startupProbe:

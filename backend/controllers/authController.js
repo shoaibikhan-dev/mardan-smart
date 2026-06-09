@@ -21,7 +21,7 @@ const setTokenCookies = async (res, userId) => {
 
   const { redisClient } = require('../config/redis');
   // Store refresh token in Redis: refresh:<token> → userId, TTL 7 days
-  await redisClient.setEx(`refresh:${refreshToken}`, 7 * 24 * 60 * 60, String(userId));
+  await redisClient.set(`refresh:${refreshToken}`, String(userId), 'EX', 7 * 24 * 60 * 60);
 
   res.cookie('msc_token', accessToken, {
     httpOnly: true,
@@ -122,7 +122,7 @@ exports.logout = async (req, res) => {
     const { redisClient } = require('../config/redis');
     const accessToken  = req.cookies.msc_token;
     const refreshToken = req.cookies.msc_refresh;
-    if (accessToken)  await redisClient.setEx(`blacklist:${accessToken}`, 15 * 60, 'true');
+    if (accessToken)  await redisClient.set(`blacklist:${accessToken}`, 'true', 'EX', 15 * 60);
     if (refreshToken) await redisClient.del(`refresh:${refreshToken}`);
     res.clearCookie('msc_token');
     res.clearCookie('msc_refresh', { path: '/api/v1/auth/refresh' });
