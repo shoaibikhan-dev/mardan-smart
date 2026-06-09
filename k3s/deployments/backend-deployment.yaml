@@ -27,7 +27,7 @@ spec:
         fsGroup: 1001
       containers:
       - name: backend
-        image: shoaibikhandev/mardan-backend:6351a96f776867d0b9106f6569aa1025e96794db
+        image: shoaibikhandev/mardan-backend:4732502256a6aaeed273b93c376035921dbf7c99
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 5000
