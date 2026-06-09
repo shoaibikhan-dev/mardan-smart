@@ -13,7 +13,13 @@ const buildImageUrl = (req, file) =>
 
 const invalidateComplaintCache = async () => {
   try {
-    const keys = await redisClient.keys('complaints:*');
+    const stream = redisClient.scanStream({ match: 'complaints:*', count: 100 });
+    const keys = [];
+    stream.on('data', (batch) => keys.push(...batch));
+    await new Promise((resolve, reject) => {
+      stream.on('end', resolve);
+      stream.on('error', reject);
+    });
     if (keys.length > 0) await redisClient.del(keys);
   } catch (err) {
     logger.error({ err }, 'Cache invalidation error');
@@ -46,7 +52,10 @@ exports.getAllComplaints = async (req, res) => {
     const cached = await redisClient.get(cacheKey);
     if (cached) { logger.info('Cache HIT'); return res.json(JSON.parse(cached)); }
     logger.info('Cache MISS');
-    const { status, category, priority, search, page = 1, limit = 10, sortBy = 'createdAt', order = 'DESC' } = req.query;
+    const { status, category, priority, search, page = 1, limit = 10, order = 'DESC' } = req.query;
+    const allowedSort = ['createdAt', 'updatedAt', 'priority', 'status'];
+    let sortBy = req.query.sortBy || 'createdAt';
+    if (!allowedSort.includes(sortBy)) sortBy = 'createdAt';
     const { Op } = require('sequelize');
     const where = {};
     if (status)   where.status   = status;

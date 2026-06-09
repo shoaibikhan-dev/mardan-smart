@@ -11,6 +11,7 @@ const compression = require('compression');
 require('dotenv').config();
 
 const { connectDB, sequelize } = require('./config/db');
+const { protect, adminOnly } = require('./middleware/authMiddleware');
 const requestId = require('./middleware/requestId');
 const { connectRedis, redisClient } = require('./config/redis');
 const app = express();
@@ -28,7 +29,10 @@ app.use(requestId);
 
 // ── CORS (Custom bulletproof middleware) ──────────────────────────────────────
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin',  req.headers.origin || '*');
+  const allowedOrigins = ['https://mardan.local', process.env.CLIENT_URL];
+  if (allowedOrigins.includes(req.headers.origin)) {
+    res.header('Access-Control-Allow-Origin', req.headers.origin);
+  }
   res.header('Access-Control-Allow-Credentials', 'true');
   res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
@@ -95,8 +99,17 @@ const userRoutes         = require('./routes/userRoutes');
 const categoryRoutes     = require('./routes/categoryRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 
+const trackLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  message: { success: false, message: 'Too many tracking attempts. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 app.post('/api/auth/login',    loginLimiter);
 app.post('/api/auth/register', registerLimiter);
+app.get('/api/complaints/track/:trackingId', trackLimiter);
 
 app.use('/api/auth',          authRoutes);
 app.use('/api/complaints',    complaintRoutes);
@@ -126,7 +139,7 @@ app.get('/api/health/ready', async (_req, res) => {
   }
 });
 // ── Prometheus Metrics Endpoint ───────────────────────────────────────────────
-app.get('/api/metrics', async (_req, res) => {
+app.get('/api/metrics', protect, adminOnly, async (_req, res) => {
   res.set('Content-Type', promClient.register.contentType);
   res.send(await promClient.register.metrics());
 });

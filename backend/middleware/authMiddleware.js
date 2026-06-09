@@ -11,7 +11,10 @@ exports.protect = async (req, res, next) => {
     return res.status(401).json({ success: false, message: 'Not authorized – token missing' });
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'mardan_secret_key');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const { redisClient } = require('../config/redis');
+    const isBlacklisted = await redisClient.get(`blacklist:${token}`);
+    if (isBlacklisted) return res.status(401).json({ success: false, message: 'Token has been revoked' });
     req.user = await User.findByPk(decoded.id, {
       attributes: { exclude: ['password'] },
     });

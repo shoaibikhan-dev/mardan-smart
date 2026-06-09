@@ -19,7 +19,7 @@ if (process.env.DATABASE_URL) {
   sequelize = new Sequelize(
     process.env.DB_NAME     || 'mardan_smart_city',
     process.env.DB_USER     || 'postgres',
-    process.env.DB_PASSWORD || 'mardan_password_123',
+    process.env.DB_PASSWORD,
     {
       host:    process.env.DB_HOST || 'localhost',
       port:    parseInt(process.env.DB_PORT || '5432'),

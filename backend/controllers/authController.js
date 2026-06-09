@@ -6,7 +6,7 @@ const User = require('../models/User');
 
 // Helper: generate JWT
 const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET || 'mardan_secret_key', {
+  return jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: '7d', // Hardcoded to 7d to prevent environment variable typos from crashing the server
   });
 };
@@ -89,6 +89,13 @@ exports.getMe = async (req, res) => {
 // @desc    Logout (client-side token deletion)
 // @route   POST /api/auth/logout
 // @access  Private
-exports.logout = (_req, res) => {
-  res.json({ success: true, message: 'Logged out successfully' });
+exports.logout = async (req, res) => {
+  try {
+    const token = req.headers.authorization.split(' ')[1];
+    const { redisClient } = require('../config/redis');
+    await redisClient.setEx(`blacklist:${token}`, 7 * 24 * 60 * 60, 'true');
+    res.json({ success: true, message: 'Logged out successfully' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Logout failed' });
+  }
 };
