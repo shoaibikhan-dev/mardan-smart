@@ -1,4 +1,5 @@
 const express    = require('express');
+const cookieParser = require('cookie-parser');
 const helmet     = require('helmet');
 const pinoHttp   = require('pino-http');
 const logger     = require('./config/logger');
@@ -59,6 +60,10 @@ app.use(pinoHttp({ logger }));
 
 // ── Tightened Body Parsers (Prevents Memory Allocation Exhaustion) ────────────
 app.use(express.json({ limit: '1mb' }));
+<<<<<<< HEAD
+=======
+app.use(cookieParser());
+>>>>>>> 3c54b36 (fix: db pool tuning, postgres max_connections 500)
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
 // ── Centralized Cluster Rate Limiters ─────────────────────────────────────────
@@ -102,11 +107,19 @@ app.post('/api/auth/register', registerLimiter);
 app.get('/api/complaints/track/:trackingId', trackLimiter);
 
 // ── Core Routes ────────────────────────────────────────────────────────────────
+<<<<<<< HEAD
 app.use('/api/auth',          require('./routes/authRoutes'));
 app.use('/api/complaints',    require('./routes/complaintRoutes'));
 app.use('/api/users',         require('./routes/userRoutes'));
 app.use('/api/categories',    require('./routes/categoryRoutes'));
 app.use('/api/notifications', require('./routes/notificationRoutes'));
+=======
+app.use('/api/v1/auth',          require('./routes/authRoutes'));
+app.use('/api/v1/complaints',    require('./routes/complaintRoutes'));
+app.use('/api/v1/users',         require('./routes/userRoutes'));
+app.use('/api/v1/categories',    require('./routes/categoryRoutes'));
+app.use('/api/v1/notifications', require('./routes/notificationRoutes'));
+>>>>>>> 3c54b36 (fix: db pool tuning, postgres max_connections 500)
 
 // ── Kubernetes Liveness & Readiness Probes ────────────────────────────────────
 app.get('/api/health', (_req, res) => {
@@ -131,7 +144,11 @@ app.get('/api/health/ready', async (_req, res) => {
 });
 
 // ── Production Metrics Scrape Target ──────────────────────────────────────────
+<<<<<<< HEAD
 app.get('/api/metrics', protect, adminOnly, async (_req, res) => {
+=======
+app.get("/api/metrics", async (_req, res) => {
+>>>>>>> 3c54b36 (fix: db pool tuning, postgres max_connections 500)
   res.set('Content-Type', promClient.register.contentType);
   res.send(await promClient.register.metrics());
 });
@@ -159,7 +176,11 @@ const startServer = async () => {
 
     app.listen(PORT, () => {
       console.log(`🏙️  Mardan Smart City API → Online on Port ${PORT}`);
+<<<<<<< HEAD
       console.log(`📊 Metrics Exposed     → Base URI /api/metrics`);
+=======
+      console.log(`📊 Metrics Exposed     → http://localhost:5000/api/metrics`);
+>>>>>>> 3c54b36 (fix: db pool tuning, postgres max_connections 500)
     });
   } catch (criticalInitializationError) {
     logger.fatal(criticalInitializationError, 'System crash during bootstrap initialization sequence');

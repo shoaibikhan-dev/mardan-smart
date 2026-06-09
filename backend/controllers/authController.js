@@ -4,11 +4,41 @@ const { validationResult } = require('express-validator');
 const logger = require('../config/logger');
 const User = require('../models/User');
 
-// Helper: generate JWT
-const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: '7d', // Hardcoded to 7d to prevent environment variable typos from crashing the server
+const crypto = require('crypto');
+
+// Helper: generate short-lived access token (15 min)
+const generateAccessToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '15m' });
+};
+
+// Helper: generate opaque refresh token
+const generateRefreshToken = () => crypto.randomBytes(40).toString('hex');
+
+// Helper: set both cookies
+const setTokenCookies = async (res, userId) => {
+  const accessToken  = generateAccessToken(userId);
+  const refreshToken = generateRefreshToken();
+
+  const { redisClient } = require('../config/redis');
+  // Store refresh token in Redis: refresh:<token> → userId, TTL 7 days
+  await redisClient.setEx(`refresh:${refreshToken}`, 7 * 24 * 60 * 60, String(userId));
+
+  res.cookie('msc_token', accessToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 15 * 60 * 1000, // 15 min
   });
+
+  res.cookie('msc_refresh', refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    path: '/api/v1/auth/refresh', // only sent to refresh endpoint
+  });
+
+  return { accessToken, refreshToken };
 };
 
 // @desc    Register new citizen
@@ -39,10 +69,9 @@ exports.register = async (req, res) => {
       phone,
     });
 
-    const token = generateToken(user.id);
+    await setTokenCookies(res, user.id);
     res.status(201).json({
       success: true,
-      token,
       user: { id: user.id, name: user.name, email: user.email, role: user.role },
     });
   } catch (error) {
@@ -67,10 +96,9 @@ exports.login = async (req, res) => {
     if (!user || !(await bcrypt.compare(password, user.password)))
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
 
-    const token = generateToken(user.id);
+    await setTokenCookies(res, user.id);
     res.json({
       success: true,
-      token,
       user: { id: user.id, name: user.name, email: user.email, role: user.role },
     });
   } catch (err) {
@@ -91,11 +119,39 @@ exports.getMe = async (req, res) => {
 // @access  Private
 exports.logout = async (req, res) => {
   try {
-    const token = req.headers.authorization.split(' ')[1];
     const { redisClient } = require('../config/redis');
-    await redisClient.setEx(`blacklist:${token}`, 7 * 24 * 60 * 60, 'true');
+    const accessToken  = req.cookies.msc_token;
+    const refreshToken = req.cookies.msc_refresh;
+    if (accessToken)  await redisClient.setEx(`blacklist:${accessToken}`, 15 * 60, 'true');
+    if (refreshToken) await redisClient.del(`refresh:${refreshToken}`);
+    res.clearCookie('msc_token');
+    res.clearCookie('msc_refresh', { path: '/api/v1/auth/refresh' });
     res.json({ success: true, message: 'Logged out successfully' });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Logout failed' });
+  }
+};
+
+// @desc    Refresh access token
+// @route   POST /api/v1/auth/refresh
+// @access  Public (refresh cookie required)
+exports.refresh = async (req, res) => {
+  try {
+    const refreshToken = req.cookies.msc_refresh;
+    if (!refreshToken)
+      return res.status(401).json({ success: false, message: 'No refresh token' });
+
+    const { redisClient } = require('../config/redis');
+    const userId = await redisClient.get(`refresh:${refreshToken}`);
+    if (!userId)
+      return res.status(401).json({ success: false, message: 'Refresh token expired or revoked' });
+
+    // Rotate: delete old, issue new pair
+    await redisClient.del(`refresh:${refreshToken}`);
+    await setTokenCookies(res, userId);
+
+    res.json({ success: true, message: 'Token refreshed' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Token refresh failed' });
   }
 };
