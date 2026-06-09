@@ -14,20 +14,17 @@ const { connectDB, sequelize } = require('./config/db');
 const { protect, adminOnly } = require('./middleware/authMiddleware');
 const requestId = require('./middleware/requestId');
 const { connectRedis, redisClient } = require('./config/redis');
+
 const app = express();
 
-// ── Prometheus: collect BEFORE any routes so all metrics are captured ─────────
+// Initialize Prometheus Metrics Collection
 promClient.collectDefaultMetrics({ prefix: 'msc_' });
 
-// Connect Database
-connectDB();
-connectRedis();
-
-// ── Gzip Compression ──────────────────────────────────────────────────────────
+// ── Compression & Trace Middlewares ──────────────────────────────────────────
 app.use(compression());
 app.use(requestId);
 
-// ── CORS (Custom bulletproof middleware) ──────────────────────────────────────
+// ── CORS Middleware ──────────────────────────────────────────────────────────
 app.use((req, res, next) => {
   const allowedOrigins = ['https://mardan.local', process.env.CLIENT_URL];
   if (allowedOrigins.includes(req.headers.origin)) {
@@ -40,7 +37,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// ── Security ──────────────────────────────────────────────────────────────────
+// ── Security Headers (Helmet) ─────────────────────────────────────────────────
 app.use(helmet({
   crossOriginResourcePolicy: false,
   contentSecurityPolicy: {
@@ -57,24 +54,25 @@ app.use(helmet({
   },
 }));
 
-// ── Logging ───────────────────────────────────────────────────────────────────
+// ── Streaming Logger ─────────────────────────────────────────────────────────
 app.use(pinoHttp({ logger }));
 
-// ── Body Parsers ──────────────────────────────────────────────────────────────
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+// ── Tightened Body Parsers (Prevents Memory Allocation Exhaustion) ────────────
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
-// ── Rate Limiters ─────────────────────────────────────────────────────────────
+// ── Centralized Cluster Rate Limiters ─────────────────────────────────────────
+const sharedRedisConfig = {
+  sendCommand: (...args) => redisClient.call(...args),
+};
+
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 5,
   message: { success: false, message: 'Too many login attempts. Please try again in 15 minutes.' },
   standardHeaders: true,
   legacyHeaders: false,
-  store: new RedisStore({
-    sendCommand: (...args) => redisClient.call(...args),
-    prefix: 'rl:login:',
-  }),
+  store: new RedisStore({ ...sharedRedisConfig, prefix: 'rl:login:' }),
 });
 
 const registerLimiter = rateLimit({
@@ -83,21 +81,8 @@ const registerLimiter = rateLimit({
   message: { success: false, message: 'Too many registration attempts. Please try again in 1 hour.' },
   standardHeaders: true,
   legacyHeaders: false,
-  store: new RedisStore({
-    sendCommand: (...args) => redisClient.call(...args),
-    prefix: 'rl:register:',
-  }),
+  store: new RedisStore({ ...sharedRedisConfig, prefix: 'rl:register:' }),
 });
-
-// ── Static Uploads ────────────────────────────────────────────────────────────
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
-// ── Routes ────────────────────────────────────────────────────────────────────
-const authRoutes         = require('./routes/authRoutes');
-const complaintRoutes    = require('./routes/complaintRoutes');
-const userRoutes         = require('./routes/userRoutes');
-const categoryRoutes     = require('./routes/categoryRoutes');
-const notificationRoutes = require('./routes/notificationRoutes');
 
 const trackLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -105,19 +90,25 @@ const trackLimiter = rateLimit({
   message: { success: false, message: 'Too many tracking attempts. Please try again later.' },
   standardHeaders: true,
   legacyHeaders: false,
+  store: new RedisStore({ ...sharedRedisConfig, prefix: 'rl:track:' }),
 });
 
+// ── Static Files ──────────────────────────────────────────────────────────────
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// ── Pre-Route Limiter Interceptors ────────────────────────────────────────────
 app.post('/api/auth/login',    loginLimiter);
 app.post('/api/auth/register', registerLimiter);
 app.get('/api/complaints/track/:trackingId', trackLimiter);
 
-app.use('/api/auth',          authRoutes);
-app.use('/api/complaints',    complaintRoutes);
-app.use('/api/users',         userRoutes);
-app.use('/api/categories',    categoryRoutes);
-app.use('/api/notifications', notificationRoutes);
+// ── Core Routes ────────────────────────────────────────────────────────────────
+app.use('/api/auth',          require('./routes/authRoutes'));
+app.use('/api/complaints',    require('./routes/complaintRoutes'));
+app.use('/api/users',         require('./routes/userRoutes'));
+app.use('/api/categories',    require('./routes/categoryRoutes'));
+app.use('/api/notifications', require('./routes/notificationRoutes'));
 
-// ── Health Check ──────────────────────────────────────────────────────────────
+// ── Kubernetes Liveness & Readiness Probes ────────────────────────────────────
 app.get('/api/health', (_req, res) => {
   res.json({
     status:    'OK',
@@ -132,38 +123,50 @@ app.get('/api/health/ready', async (_req, res) => {
   try {
     await sequelize.authenticate();
     const redisPing = await redisClient.ping();
-    if (redisPing !== 'PONG') throw new Error('Redis not ready');
+    if (redisPing !== 'PONG') throw new Error('Redis connection drop detected');
     res.json({ status: 'READY', db: 'ok', redis: 'ok' });
   } catch (err) {
     res.status(503).json({ status: 'NOT_READY', error: err.message });
   }
 });
-// ── Prometheus Metrics Endpoint ───────────────────────────────────────────────
+
+// ── Production Metrics Scrape Target ──────────────────────────────────────────
 app.get('/api/metrics', protect, adminOnly, async (_req, res) => {
   res.set('Content-Type', promClient.register.contentType);
   res.send(await promClient.register.metrics());
 });
 
-// ── 404 Handler ───────────────────────────────────────────────────────────────
+// ── Error Management Handlers ────────────────────────────────────────────────
 app.use((_req, res) => {
   res.status(404).json({ success: false, message: 'Route not found' });
 });
 
-// ── Global Error Handler ──────────────────────────────────────────────────────
 app.use((err, _req, res, _next) => {
-  logger.error({ err }, 'Global error');
+  logger.error({ err }, 'Global operational failure intercepted');
   res.status(err.status || 500).json({
     success: false,
     message: err.status ? err.message : 'Internal Server Error',
   });
 });
 
-// ── Start Server ──────────────────────────────────────────────────────────────
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`🏙️  Mardan Smart City API → http://localhost:${PORT}`);
-  console.log(`📊  Metrics          → http://localhost:${PORT}/api/metrics`);
-  console.log(`❤️   Health           → http://localhost:${PORT}/api/health`);
-});
+// ── Synchronized Lifecycled Boot Sequence ─────────────────────────────────────
+const startServer = async () => {
+  try {
+    const PORT = process.env.PORT || 5000;
+    
+    await connectDB();
+    await connectRedis();
+
+    app.listen(PORT, () => {
+      console.log(`🏙️  Mardan Smart City API → Online on Port ${PORT}`);
+      console.log(`📊 Metrics Exposed     → Base URI /api/metrics`);
+    });
+  } catch (criticalInitializationError) {
+    logger.fatal(criticalInitializationError, 'System crash during bootstrap initialization sequence');
+    process.exit(1);
+  }
+};
+
+startServer();
 
 module.exports = app;
