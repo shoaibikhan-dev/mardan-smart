@@ -6,6 +6,7 @@ resources:
   - secrets/backend-secrets.yaml
   - secrets/postgres-secrets.yaml
   - storage/redis-pvc.yaml
+  - storage/uploads-pvc.yaml
   - security/service-accounts.yaml
   - security/roles.yaml
   - security/role-bindings.yaml

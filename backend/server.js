@@ -10,9 +10,9 @@ const promClient = require('prom-client');
 const compression = require('compression');
 require('dotenv').config();
 
-const { connectDB } = require('./config/db');
+const { connectDB, sequelize } = require('./config/db');
 const requestId = require('./middleware/requestId');
-const { connectRedis } = require('./config/redis');
+const { connectRedis, redisClient } = require('./config/redis');
 const app = express();
 
 // ── Prometheus: collect BEFORE any routes so all metrics are captured ─────────
@@ -68,7 +68,7 @@ const loginLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   store: new RedisStore({
-    sendCommand: (...args) => redisClient.call(...args),
+    sendCommand: (...args) => redisClient.sendCommand(args),
     prefix: 'rl:login:',
   }),
 });
@@ -80,7 +80,7 @@ const registerLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   store: new RedisStore({
-    sendCommand: (...args) => redisClient.call(...args),
+    sendCommand: (...args) => redisClient.sendCommand(args),
     prefix: 'rl:register:',
   }),
 });

@@ -99,10 +99,11 @@ exports.updateComplaintStatus = async (req, res) => {
     if (adminNote !== undefined) complaint.adminNote = adminNote;
     if (status === 'resolved' && !complaint.resolvedAt) complaint.resolvedAt = new Date();
     await complaint.save();
+    const notifUser = await User.findByPk(complaint.userId, { attributes: ["email"] });
     await notificationQueue.add({
       complaintId: complaint.id,
       status: complaint.status,
-      userEmail: complaint.userId,
+      userEmail: notifUser?.email,
     });
     await invalidateComplaintCache();
     await redisClient.del(`complaints:id:${req.params.id}`);
