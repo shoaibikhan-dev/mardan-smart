@@ -99,16 +99,16 @@ const trackLimiter = rateLimit({
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // ── Pre-Route Limiter Interceptors ────────────────────────────────────────────
-app.post('/api/auth/login',    loginLimiter);
-app.post('/api/auth/register', registerLimiter);
-app.get('/api/complaints/track/:trackingId', trackLimiter);
+app.post('/api/v1/auth/login',    loginLimiter);
+app.post('/api/v1/auth/register', registerLimiter);
+app.get('/api/v1/complaints/track/:trackingId', trackLimiter);
 
 // ── Core Routes ────────────────────────────────────────────────────────────────
-app.use('/api/auth',          require('./routes/authRoutes'));
-app.use('/api/complaints',    require('./routes/complaintRoutes'));
-app.use('/api/users',         require('./routes/userRoutes'));
-app.use('/api/categories',    require('./routes/categoryRoutes'));
-app.use('/api/notifications', require('./routes/notificationRoutes'));
+app.use('/api/v1/auth',          require('./routes/authRoutes'));
+app.use('/api/v1/complaints',    require('./routes/complaintRoutes'));
+app.use('/api/v1/users',         require('./routes/userRoutes'));
+app.use('/api/v1/categories',    require('./routes/categoryRoutes'));
+app.use('/api/v1/notifications', require('./routes/notificationRoutes'));
 
 // ── Kubernetes Liveness & Readiness Probes ────────────────────────────────────
 app.get('/api/health', (_req, res) => {

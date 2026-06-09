@@ -30,7 +30,7 @@ export default function () {
 
   // Test 2: Login (bcrypt + DB query)
   const loginRes = http.post(
-    `${BASE_URL}/api/auth/login`,
+    `${BASE_URL}/api/v1/auth/login`,
     JSON.stringify({
       email: 'admin@mardan.gov.pk',
       password: 'Admin@1234',
@@ -48,7 +48,7 @@ export default function () {
 
   // Test 3: Get complaints (DB query + Redis cache)
   if (token) {
-    const complaintsRes = http.get(`${BASE_URL}/api/complaints`, {
+    const complaintsRes = http.get(`${BASE_URL}/api/v1/complaints`, {
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
@@ -63,7 +63,7 @@ export default function () {
 
     // Test 4: Submit a complaint (DB write)
     const submitRes = http.post(
-      `${BASE_URL}/api/complaints`,
+      `${BASE_URL}/api/v1/complaints`,
       JSON.stringify({
         title: 'Load Test Complaint',
         description: 'This is a load test complaint submission',

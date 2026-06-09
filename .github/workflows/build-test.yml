@@ -31,3 +31,15 @@ jobs:
       - name: Lint Frontend
         working-directory: ./frontend
         run: npm run lint
+
+      - name: Build Backend Docker Image
+        run: docker build -t mardan-backend:scan ./backend
+
+      - name: Run Trivy Vulnerability Scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: mardan-backend:scan
+          format: table
+          exit-code: '1'
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
