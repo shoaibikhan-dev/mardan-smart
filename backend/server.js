@@ -72,7 +72,7 @@ const loginLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   store: new RedisStore({
-    sendCommand: (...args) => redisClient.sendCommand(args),
+    sendCommand: (...args) => redisClient.call(...args),
     prefix: 'rl:login:',
   }),
 });
@@ -84,7 +84,7 @@ const registerLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   store: new RedisStore({
-    sendCommand: (...args) => redisClient.sendCommand(args),
+    sendCommand: (...args) => redisClient.call(...args),
     prefix: 'rl:register:',
   }),
 });
