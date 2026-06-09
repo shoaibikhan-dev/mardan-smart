@@ -161,11 +161,7 @@ const startServer = async () => {
 
     app.listen(PORT, () => {
       console.log(`🏙️  Mardan Smart City API → Online on Port ${PORT}`);
-<<<<<<< HEAD
       console.log(`📊 Metrics Exposed     → Base URI /api/metrics`);
-=======
-      console.log(`📊 Metrics Exposed     → http://localhost:5000/api/metrics`);
->>>>>>> 3c54b36 (fix: db pool tuning, postgres max_connections 500)
     });
   } catch (criticalInitializationError) {
     logger.fatal(criticalInitializationError, 'System crash during bootstrap initialization sequence');
