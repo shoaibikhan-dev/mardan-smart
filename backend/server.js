@@ -68,7 +68,7 @@ const loginLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   store: new RedisStore({
-    sendCommand: (...args) => redisClient.sendCommand(args),
+    sendCommand: (...args) => redisClient.call(...args),
     prefix: 'rl:login:',
   }),
 });
@@ -80,7 +80,7 @@ const registerLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   store: new RedisStore({
-    sendCommand: (...args) => redisClient.sendCommand(args),
+    sendCommand: (...args) => redisClient.call(...args),
     prefix: 'rl:register:',
   }),
 });
@@ -138,7 +138,7 @@ app.use((_req, res) => {
 
 // ── Global Error Handler ──────────────────────────────────────────────────────
 app.use((err, _req, res, _next) => {
-  logger.error({ err }, '[${new Date().toISOString()}] ERROR:`, err.stack);
+  logger.error({ err }, 'Global error');
   res.status(err.status || 500).json({
     success: false,
     message: err.status ? err.message : 'Internal Server Error',

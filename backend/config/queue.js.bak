@@ -1,4 +1,4 @@
-const Bull  = require('bull');
+const Bull = require('bull');
 const nodemailer = require('nodemailer');
 
 const transporter = nodemailer.createTransport({
@@ -21,7 +21,7 @@ const notificationQueue = new Bull('notifications', {
 notificationQueue.process(async (job) => {
   const { complaintId, status, userEmail } = job.data;
   if (!process.env.SMTP_USER || !userEmail) {
-    console.log(`📧 [SKIP] No SMTP config for complaint ${complaintId}`);
+    console.log(`📧 [SKIP] No SMTP config or email for complaint ${complaintId}`);
     return;
   }
   await transporter.sendMail({
@@ -30,13 +30,19 @@ notificationQueue.process(async (job) => {
     subject: `Complaint ${complaintId} — Status Updated to ${status}`,
     html: `
       <h2>Mardan Smart City Complaint Portal</h2>
-      <p>Your complaint <strong>${complaintId}</strong> status updated to <strong>${status}</strong>.</p>
+      <p>Your complaint <strong>${complaintId}</strong> status has been updated to <strong>${status}</strong>.</p>
+      <p>Login to your dashboard to view details.</p>
     `,
   });
-  console.log(`✅ Email sent to ${userEmail}`);
+  console.log(`✅ Email sent to ${userEmail} for complaint ${complaintId}`);
 });
 
-notificationQueue.on('completed', (job) => console.log(`✅ Job ${job.id} done`));
-notificationQueue.on('failed',    (job, err) => console.error(`❌ Job ${job.id} failed:`, err.message));
+notificationQueue.on('completed', (job) => {
+  console.log(`✅ Notification sent for job ${job.id}`);
+});
+
+notificationQueue.on('failed', (job, err) => {
+  console.error(`❌ Notification failed for job ${job.id}:`, err.message);
+});
 
 module.exports = { notificationQueue };
