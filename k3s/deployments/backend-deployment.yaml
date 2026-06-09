@@ -23,6 +23,7 @@ spec:
         app: backend
         tier: backend
     spec:
+      serviceAccountName: backend-sa
       securityContext:
         fsGroup: 1001
       containers:
@@ -44,6 +45,13 @@ spec:
           limits:
             cpu: "500m"
             memory: "512Mi"
+        # Startup: give slow-starting container time before liveness kicks in
+        startupProbe:
+          httpGet:
+            path: /api/health
+            port: 5000
+          failureThreshold: 30
+          periodSeconds: 5
         # Readiness: only send traffic when the app is fully ready
         readinessProbe:
           httpGet:

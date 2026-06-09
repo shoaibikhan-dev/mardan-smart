@@ -27,3 +27,8 @@ resources:
   - autoscaling/backend-hpa.yaml
   - autoscaling/frontend-hpa.yaml
   - config/postgres-init-configmap.yaml
+  - policies/backend-access.yaml
+  - policies/db-access.yaml
+  - policies/monitoring-access.yaml
+  - observability/prometheus-deployment.yaml
+  - secrets/grafana-secret.yaml

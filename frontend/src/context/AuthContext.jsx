@@ -5,7 +5,6 @@ import { authService } from '../services/authService'
 const AuthContext = createContext(null)
 
 // ── Constants ────────────────────────────────────────────────────────────────
-const TOKEN_KEY = 'msc_token'
 const USER_KEY  = 'msc_user'
 
 // ── Provider ─────────────────────────────────────────────────────────────────
@@ -13,33 +12,26 @@ export function AuthProvider({ children }) {
   const [user,    setUser]    = useState(() => {
     try { return JSON.parse(localStorage.getItem(USER_KEY)) } catch { return null }
   })
-  const [token,   setToken]   = useState(() => localStorage.getItem(TOKEN_KEY))
   const [loading, setLoading] = useState(true)   // initial session check
   const [error,   setError]   = useState(null)
 
   // ── Persist helpers ───────────────────────────────────────────────────────
-  const persist = (token, user) => {
-    localStorage.setItem(TOKEN_KEY, token)
-    localStorage.setItem(USER_KEY,  JSON.stringify(user))
-    setToken(token)
+  const persist = (user) => {
+    localStorage.setItem(USER_KEY, JSON.stringify(user))
     setUser(user)
   }
 
   const clear = () => {
-    localStorage.removeItem(TOKEN_KEY)
     localStorage.removeItem(USER_KEY)
-    setToken(null)
     setUser(null)
   }
 
   // ── Verify token on mount ─────────────────────────────────────────────────
   useEffect(() => {
     const verify = async () => {
-      if (!token) { setLoading(false); return }
       try {
         const { data } = await authService.getMe()
-        setUser(data.user)
-        localStorage.setItem(USER_KEY, JSON.stringify(data.user))
+        persist(data.user)
       } catch {
         clear()
       } finally {
@@ -53,14 +45,14 @@ export function AuthProvider({ children }) {
   const register = useCallback(async (formData) => {
     setError(null)
     const { data } = await authService.register(formData)
-    persist(data.token, data.user)
+    persist(data.user)
     return data
   }, [])
 
   const login = useCallback(async (credentials) => {
     setError(null)
     const { data } = await authService.login(credentials)
-    persist(data.token, data.user)
+    persist(data.user)
     return data
   }, [])
 
@@ -69,10 +61,10 @@ export function AuthProvider({ children }) {
     clear()
   }, [])
 
-  const isAuthenticated = !!token && !!user
+  const isAuthenticated = !!user
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, error, setError, isAuthenticated, register, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, error, setError, isAuthenticated, register, login, logout }}>
       {children}
     </AuthContext.Provider>
   )

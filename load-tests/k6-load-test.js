@@ -11,15 +11,78 @@ export const options = {
   ],
   thresholds: {
     http_req_duration: ['p(95)<1000'],
+    http_req_failed: ['rate<0.05'],
   },
   insecureSkipTLSVerify: true,
 };
 
+const BASE_URL = 'https://mardan.local';
+
 export default function () {
-  const res = http.get('https://mardan.local/api/health');
-  check(res, {
-    'is status 200': (r) => r.status === 200,
-    'uptime is returned': (r) => r.json('status') === 'OK',
+  // Test 1: Health check
+  const healthRes = http.get(`${BASE_URL}/api/health`);
+  check(healthRes, {
+    'health status 200': (r) => r.status === 200,
+    'health returns OK': (r) => r.json('status') === 'OK',
   });
+
+  sleep(0.5);
+
+  // Test 2: Login (bcrypt + DB query)
+  const loginRes = http.post(
+    `${BASE_URL}/api/auth/login`,
+    JSON.stringify({
+      email: 'admin@mardan.gov.pk',
+      password: 'Admin@1234',
+    }),
+    { headers: { 'Content-Type': 'application/json' } }
+  );
+  check(loginRes, {
+    'login status 200 or 401': (r) => r.status === 200 || r.status === 401,
+    'login response time < 2s': (r) => r.timings.duration < 2000,
+  });
+
+  const token = loginRes.status === 200 ? loginRes.json('token') : null;
+
+  sleep(0.5);
+
+  // Test 3: Get complaints (DB query + Redis cache)
+  if (token) {
+    const complaintsRes = http.get(`${BASE_URL}/api/complaints`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    check(complaintsRes, {
+      'complaints status 200': (r) => r.status === 200,
+      'complaints response time < 1s': (r) => r.timings.duration < 1000,
+    });
+
+    sleep(0.5);
+
+    // Test 4: Submit a complaint (DB write)
+    const submitRes = http.post(
+      `${BASE_URL}/api/complaints`,
+      JSON.stringify({
+        title: 'Load Test Complaint',
+        description: 'This is a load test complaint submission',
+        category: 'Infrastructure',
+        priority: 'medium',
+        location: 'Mardan City Center',
+      }),
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    check(submitRes, {
+      'complaint submit 201 or 200': (r) => r.status === 201 || r.status === 200,
+      'complaint submit time < 2s': (r) => r.timings.duration < 2000,
+    });
+  }
+
   sleep(1);
 }

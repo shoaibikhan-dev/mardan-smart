@@ -45,6 +45,11 @@ spec:
       protocol: UDP
     - port: 53
       protocol: TCP
+  - ports:
+    - port: 587
+      protocol: TCP
+    - port: 465
+      protocol: TCP
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
