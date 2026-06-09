@@ -15,3 +15,5 @@ data:
   DB_NAME: "mardan_smart_city"
   DB_USER: "postgres"
   CLIENT_URL: "http://localhost"
+  SMTP_HOST: "smtp.gmail.com"
+  SMTP_PORT: "587"

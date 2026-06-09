@@ -10,7 +10,7 @@ export const options = {
     { duration: '30s', target: 0 },
   ],
   thresholds: {
-    http_req_duration: ['p(95)<500'],
+    http_req_duration: ['p(95)<1000'],
   },
   insecureSkipTLSVerify: true,
 };

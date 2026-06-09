@@ -10,7 +10,6 @@ const compression = require('compression');
 require('dotenv').config();
 
 const { connectDB } = require('./config/db');
-const requestId = require('./middleware/requestId');
 const { connectRedis } = require('./config/redis');
 const app = express();
 
@@ -23,7 +22,6 @@ connectRedis();
 
 // ── Gzip Compression ──────────────────────────────────────────────────────────
 app.use(compression());
-app.use(requestId);
 
 // ── CORS (Custom bulletproof middleware) ──────────────────────────────────────
 app.use((req, res, next) => {
@@ -94,14 +92,6 @@ app.use('/api/notifications', notificationRoutes);
 
 // ── Health Check ──────────────────────────────────────────────────────────────
 app.get('/api/health', (_req, res) => {
-  res.json({
-    status:    'OK',
-    project:   'Mardan Smart City Complaint Portal',
-    version:   process.env.npm_package_version || '1.0.0',
-    timestamp: new Date().toISOString(),
-    uptime:    process.uptime(),
-  });
-});
 
 app.get('/api/health/ready', async (_req, res) => {
   try {
@@ -113,6 +103,15 @@ app.get('/api/health/ready', async (_req, res) => {
     res.status(503).json({ status: 'NOT_READY', error: err.message });
   }
 });
+  res.json({
+    status:    'OK',
+    project:   'Mardan Smart City Complaint Portal',
+    version:   process.env.npm_package_version || '1.0.0',
+    timestamp: new Date().toISOString(),
+    uptime:    process.uptime(),
+  });
+});
+
 // ── Prometheus Metrics Endpoint ───────────────────────────────────────────────
 app.get('/api/metrics', async (_req, res) => {
   res.set('Content-Type', promClient.register.contentType);

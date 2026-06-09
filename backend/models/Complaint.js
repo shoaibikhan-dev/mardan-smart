@@ -49,6 +49,10 @@ const Complaint = sequelize.define('Complaint', {
     type: DataTypes.STRING(10),
     unique: true,
   },
+  adminNote: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
   resolvedAt: {
     type: DataTypes.DATE,
     allowNull: true,

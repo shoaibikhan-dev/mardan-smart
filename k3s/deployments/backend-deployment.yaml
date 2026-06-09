@@ -47,7 +47,7 @@ spec:
         # Readiness: only send traffic when the app is fully ready
         readinessProbe:
           httpGet:
-            path: /api/health
+            path: /api/health/ready
             port: 5000
           initialDelaySeconds: 10
           periodSeconds: 10
@@ -67,4 +67,5 @@ spec:
           mountPath: /usr/src/app/uploads
       volumes:
       - name: uploads-volume
-        emptyDir: {}
+        persistentVolumeClaim:
+          claimName: uploads-pvc

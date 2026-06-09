@@ -1,4 +1,15 @@
 const Bull = require('bull');
+const nodemailer = require('nodemailer');
+
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST || 'smtp.gmail.com',
+  port: parseInt(process.env.SMTP_PORT || '587'),
+  secure: false,
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+});
 
 const notificationQueue = new Bull('notifications', {
   redis: {
@@ -9,7 +20,21 @@ const notificationQueue = new Bull('notifications', {
 
 notificationQueue.process(async (job) => {
   const { complaintId, status, userEmail } = job.data;
-  console.log(`📧 Sending notification for complaint ${complaintId} - Status: ${status} to ${userEmail}`);
+  if (!process.env.SMTP_USER || !userEmail) {
+    console.log(`📧 [SKIP] No SMTP config or email for complaint ${complaintId}`);
+    return;
+  }
+  await transporter.sendMail({
+    from: `"Mardan Smart City" <${process.env.SMTP_USER}>`,
+    to: userEmail,
+    subject: `Complaint ${complaintId} — Status Updated to ${status}`,
+    html: `
+      <h2>Mardan Smart City Complaint Portal</h2>
+      <p>Your complaint <strong>${complaintId}</strong> status has been updated to <strong>${status}</strong>.</p>
+      <p>Login to your dashboard to view details.</p>
+    `,
+  });
+  console.log(`✅ Email sent to ${userEmail} for complaint ${complaintId}`);
 });
 
 notificationQueue.on('completed', (job) => {

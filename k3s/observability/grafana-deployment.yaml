@@ -15,12 +15,15 @@ spec:
     spec:
       containers:
       - name: grafana
-        image: grafana/grafana:latest
+        image: grafana/grafana:11.1.0
         ports:
         - containerPort: 3000
         env:
         - name: GF_SECURITY_ADMIN_PASSWORD
-          value: "mardan_admin_dashboard"
+          valueFrom:
+            secretKeyRef:
+              name: grafana-secret
+              key: admin-password
         resources:
           requests:
             cpu: "100m"
