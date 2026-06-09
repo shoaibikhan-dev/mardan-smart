@@ -70,7 +70,7 @@ exports.getAllComplaints = async (req, res) => {
       offset: (parseInt(page) - 1) * parseInt(limit),
     });
     const result = { success: true, total: count, page: parseInt(page), totalPages: Math.ceil(count / parseInt(limit)), data: rows };
-    await redisClient.setEx(cacheKey, 300, JSON.stringify(result));
+    await redisClient.set(cacheKey, JSON.stringify(result), 'EX', 300);
     res.json(result);
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
@@ -89,7 +89,7 @@ exports.getComplaintById = async (req, res) => {
     if (req.user.role === 'citizen' && complaint.userId !== req.user.id)
       return res.status(403).json({ success: false, message: 'Access denied.' });
     const result = { success: true, data: complaint };
-    await redisClient.setEx(cacheKey, 600, JSON.stringify(result));
+    await redisClient.set(cacheKey, JSON.stringify(result), 'EX', 600);
     res.json(result);
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
@@ -152,7 +152,7 @@ exports.trackComplaint = async (req, res) => {
     });
     if (!complaint) return res.status(404).json({ success: false, message: 'No complaint found with this tracking ID.' });
     const result = { success: true, data: complaint };
-    await redisClient.setEx(cacheKey, 300, JSON.stringify(result));
+    await redisClient.set(cacheKey, JSON.stringify(result), 'EX', 300);
     res.json(result);
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
@@ -173,7 +173,7 @@ exports.getUserComplaints = async (req, res) => {
       limit: parseInt(limit), offset: (parseInt(page) - 1) * parseInt(limit),
     });
     const result = { success: true, total: count, page: parseInt(page), totalPages: Math.ceil(count / parseInt(limit)), data: rows };
-    await redisClient.setEx(cacheKey, 120, JSON.stringify(result));
+    await redisClient.set(cacheKey, JSON.stringify(result), 'EX', 120);
     res.json(result);
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
@@ -196,7 +196,7 @@ exports.getStats = async (req, res) => {
       Complaint.count({ where: { ...where, status: 'rejected' } }),
     ]);
     const result = { success: true, data: { total, pending, inProgress, resolved, rejected } };
-    await redisClient.setEx(cacheKey, 120, JSON.stringify(result));
+    await redisClient.set(cacheKey, JSON.stringify(result), 'EX', 120);
     res.json(result);
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
