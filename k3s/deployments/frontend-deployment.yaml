@@ -23,16 +23,27 @@ spec:
         app: frontend
         tier: frontend
     spec:
+      serviceAccountName: frontend-sa
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 101
+        fsGroup: 101
+        seccompProfile:
+          type: RuntimeDefault
       containers:
       - name: frontend
-        image: shoaibikhandev/mardan-frontend:2225968bb7d057d01ed963283560cc0c4841cd33
-        imagePullPolicy: IfNotPresent
+        image: shoaibikhandev/mardan-frontend:8fff7eacdbf324174a4559817165f40bbfc95d1c
+        imagePullPolicy: Always
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
         ports:
         - containerPort: 80
           name: http
-        env:
-        - name: NEXT_PUBLIC_API_URL
-          value: "http://localhost:31724"
         resources:
           requests:
             cpu: "100m"
@@ -61,3 +72,17 @@ spec:
           periodSeconds: 30
           failureThreshold: 3
           timeoutSeconds: 5
+        volumeMounts:
+        - name: tmp-volume
+          mountPath: /tmp
+        - name: cache-volume
+          mountPath: /var/cache/nginx
+        - name: run-volume
+          mountPath: /var/run
+      volumes:
+      - name: tmp-volume
+        emptyDir: {}
+      - name: cache-volume
+        emptyDir: {}
+      - name: run-volume
+        emptyDir: {}

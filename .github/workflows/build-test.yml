@@ -36,7 +36,7 @@ jobs:
         run: docker build -t mardan-backend:scan ./backend
 
       - name: Run Trivy Vulnerability Scan
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@0.28.0
         with:
           image-ref: mardan-backend:scan
           format: table

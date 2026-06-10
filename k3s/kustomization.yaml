@@ -3,8 +3,9 @@ kind: Kustomization
 resources:
   - namespace.yaml
   - config/backend-config.yaml
-  - secrets/backend-secrets.yaml
-  - secrets/postgres-secrets.yaml
+  - secrets/backend-sealed-secret.yaml
+  - secrets/postgres-sealed-secret.yaml
+  - secrets/grafana-sealed-secret.yaml
   - storage/redis-pvc.yaml
   - storage/uploads-pvc.yaml
   - security/service-accounts.yaml
@@ -31,4 +32,3 @@ resources:
   - policies/db-access.yaml
   - policies/monitoring-access.yaml
   - observability/prometheus-deployment.yaml
-  - secrets/grafana-secret.yaml

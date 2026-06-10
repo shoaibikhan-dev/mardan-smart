@@ -1,49 +1,47 @@
-# ── Dependencies ────────────────────────────────────
-node_modules/
-frontend/node_modules/
-backend/node_modules/
 
 # ── Build Outputs ────────────────────────────────────
-frontend/dist/
-frontend/build/
-
+# ── Database Files ──────────────────────────────────
+# ── Dependencies ────────────────────────────────────
+# ── Editor ───────────────────────────────────────────
 # ── Environment Variables (NEVER commit these) ───────
-.env
-.env.local
-.env.development
-.env.production
-frontend/.env
-backend/.env
-
+# ── Large Media Files ───────────────────────────────
 # ── Logs ────────────────────────────────────────────
+# ── Misc ─────────────────────────────────────────────
+# ── OS Files ─────────────────────────────────────────
+# ── Uploads ─────────────────────────────────────────
+backend/.env
+backend/node_modules/
+backend/uploads/
+coverage/
+*.db
+desktop.ini
+.DS_Store
+.env
+.env.development
+.env.local
+.env.production
+frontend/build/
+frontend/dist/
+frontend/.env
+frontend/node_modules/
+frontend/public/mardan-bg.mp4
+.idea/
+k3s/secrets/backend-secrets.yaml
+k3s/secrets/grafana-secret.yaml
+k3s/secrets/postgres-secrets.yaml
 *.log
+*.njsproj
+node_modules/
 npm-debug.log*
+*.ntvs*
+.nyc_output/
+*.pem
+*.sln
+*.sqlite
+*.suo
+Thumbs.db
+.vscode/settings.json
 yarn-debug.log*
 yarn-error.log*
-
-# ── OS Files ─────────────────────────────────────────
-.DS_Store
-Thumbs.db
-desktop.ini
-
-# ── Editor ───────────────────────────────────────────
-.vscode/settings.json
-.idea/
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-
-# ── Misc ─────────────────────────────────────────────
-*.pem
-coverage/
-.nyc_output/
-# ── Database Files ──────────────────────────────────
-*.sqlite
-*.db
-
-# ── Uploads ─────────────────────────────────────────
-backend/uploads/
-
-# ── Large Media Files ───────────────────────────────
-frontend/public/mardan-bg.mp4
+k3s/kubeseal
+k3s/kubeseal-*.tar.gz

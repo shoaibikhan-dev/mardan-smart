@@ -16,7 +16,7 @@ spec:
     type: RollingUpdate
     rollingUpdate:
       maxSurge: 1
-      maxUnavailable: 0   # Zero-downtime: never kill a pod before new one is ready
+      maxUnavailable: 0
   template:
     metadata:
       labels:
@@ -24,12 +24,23 @@ spec:
         tier: backend
     spec:
       serviceAccountName: backend-sa
+      automountServiceAccountToken: false
       securityContext:
         fsGroup: 1001
+        runAsNonRoot: true
+        runAsUser: 1001
+        seccompProfile:
+          type: RuntimeDefault
       containers:
       - name: backend
-        image: shoaibikhandev/mardan-backend:2225968bb7d057d01ed963283560cc0c4841cd33
-        imagePullPolicy: IfNotPresent
+        image: shoaibikhandev/mardan-backend:8fff7eacdbf324174a4559817165f40bbfc95d1c
+        imagePullPolicy: Always
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
         ports:
         - containerPort: 5000
           name: http
@@ -45,14 +56,12 @@ spec:
           limits:
             cpu: "500m"
             memory: "512Mi"
-        # Startup: give slow-starting container time before liveness kicks in
         startupProbe:
           httpGet:
             path: /api/health
             port: 5000
           failureThreshold: 30
           periodSeconds: 5
-        # Readiness: only send traffic when the app is fully ready
         readinessProbe:
           httpGet:
             path: /api/health/ready
@@ -62,7 +71,6 @@ spec:
           failureThreshold: 5
           timeoutSeconds: 5
           successThreshold: 1
-        # Liveness: restart container if it hangs but doesn't crash
         livenessProbe:
           httpGet:
             path: /api/health
@@ -74,7 +82,11 @@ spec:
         volumeMounts:
         - name: uploads-volume
           mountPath: /usr/src/app/uploads
+        - name: tmp-volume
+          mountPath: /tmp
       volumes:
       - name: uploads-volume
         persistentVolumeClaim:
           claimName: uploads-pvc
+      - name: tmp-volume
+        emptyDir: {}

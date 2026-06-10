@@ -20,19 +20,43 @@ jobs:
           username: ${{ secrets.DOCKERUSERNAME }}
           password: ${{ secrets.DOCKERPASSWORD }}
 
-      - name: Build & Push Backend Docker Image
+      - name: Build Backend Docker Image
         run: |
-          docker build -t ${{ secrets.DOCKERUSERNAME }}/mardan-backend:latest \
-            -t ${{ secrets.DOCKERUSERNAME }}/mardan-backend:${{ github.sha }} ./backend
-          docker push ${{ secrets.DOCKERUSERNAME }}/mardan-backend:latest
-          docker push ${{ secrets.DOCKERUSERNAME }}/mardan-backend:${{ github.sha }}
+          docker build -t ${{ secrets.DOCKERUSERNAME }}/mardan-backend:${{ github.sha }} \
+            -t ${{ secrets.DOCKERUSERNAME }}/mardan-backend:latest ./backend
 
-      - name: Build & Push Frontend Docker Image
+      - name: Build Frontend Docker Image
         run: |
-          docker build -t ${{ secrets.DOCKERUSERNAME }}/mardan-frontend:latest \
-            -t ${{ secrets.DOCKERUSERNAME }}/mardan-frontend:${{ github.sha }} ./frontend
-          docker push ${{ secrets.DOCKERUSERNAME }}/mardan-frontend:latest
+          docker build -t ${{ secrets.DOCKERUSERNAME }}/mardan-frontend:${{ github.sha }} \
+            -t ${{ secrets.DOCKERUSERNAME }}/mardan-frontend:latest ./frontend
+
+      - name: Trivy Scan Backend
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ${{ secrets.DOCKERUSERNAME }}/mardan-backend:${{ github.sha }}
+          format: table
+          exit-code: '1'
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+
+      - name: Trivy Scan Frontend
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ${{ secrets.DOCKERUSERNAME }}/mardan-frontend:${{ github.sha }}
+          format: table
+          exit-code: '1'
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+
+      - name: Push Backend Image
+        run: |
+          docker push ${{ secrets.DOCKERUSERNAME }}/mardan-backend:${{ github.sha }}
+          docker push ${{ secrets.DOCKERUSERNAME }}/mardan-backend:latest
+
+      - name: Push Frontend Image
+        run: |
           docker push ${{ secrets.DOCKERUSERNAME }}/mardan-frontend:${{ github.sha }}
+          docker push ${{ secrets.DOCKERUSERNAME }}/mardan-frontend:latest
 
       - name: Update Image Tags in Kubernetes YAML
         run: |

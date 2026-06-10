@@ -10,6 +10,47 @@ spec:
   destinations:
   - namespace: mardan-smart-city
     server: https://kubernetes.default.svc
+  # Sirf yeh namespace-scoped resources allow hain
+  namespaceResourceWhitelist:
+  - group: 'apps'
+    kind: 'Deployment'
+  - group: 'apps'
+    kind: 'StatefulSet'
+  - group: ''
+    kind: 'Service'
+  - group: ''
+    kind: 'ConfigMap'
+  - group: ''
+    kind: 'ServiceAccount'
+  - group: ''
+    kind: 'PersistentVolumeClaim'
+  - group: 'networking.k8s.io'
+    kind: 'Ingress'
+  - group: 'networking.k8s.io'
+    kind: 'NetworkPolicy'
+  - group: 'autoscaling'
+    kind: 'HorizontalPodAutoscaler'
+  - group: 'policy'
+    kind: 'PodDisruptionBudget'
+  - group: 'rbac.authorization.k8s.io'
+    kind: 'Role'
+  - group: 'rbac.authorization.k8s.io'
+    kind: 'RoleBinding'
+  - group: 'batch'
+    kind: 'CronJob'
+  - group: 'bitnami.com'
+    kind: 'SealedSecret'
+  - group: 'traefik.io'
+    kind: 'Middleware'
+  # Sirf yeh cluster-scoped resources allow hain
   clusterResourceWhitelist:
-  - group: '*'
-    kind: '*'
+  - group: ''
+    kind: 'Namespace'
+  # Sirf read access ArgoCD ko
+  roles:
+  - name: read-only
+    description: Read only access
+    policies:
+    - p, proj:mardan-project:read-only, applications, get, mardan-project/*, allow
+    groups:
+    - mardan-viewers
