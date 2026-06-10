@@ -23,21 +23,11 @@ spec:
         tier: cache
     spec:
       automountServiceAccountToken: false
-      securityContext:
-        runAsNonRoot: true
-        runAsUser: 999
-        fsGroup: 999
-        seccompProfile:
-          type: RuntimeDefault
       containers:
       - name: redis
         image: redis:7-alpine
         securityContext:
           allowPrivilegeEscalation: false
-          readOnlyRootFilesystem: true
-          capabilities:
-            drop:
-            - ALL
         ports:
         - containerPort: 6379
           name: redis
@@ -67,8 +57,6 @@ spec:
         volumeMounts:
         - name: redis-data
           mountPath: /data
-        - name: tmp-volume
-          mountPath: /tmp
         readinessProbe:
           exec:
             command: ["redis-cli", "ping"]
@@ -84,5 +72,3 @@ spec:
       - name: redis-data
         persistentVolumeClaim:
           claimName: redis-pvc
-      - name: tmp-volume
-        emptyDir: {}
