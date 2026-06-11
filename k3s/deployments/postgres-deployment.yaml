@@ -54,6 +54,9 @@ spec:
           - "effective_io_concurrency=200"
         ports:
         - containerPort: 5432
+        env:
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
         envFrom:
         - secretRef:
             name: postgres-secrets
