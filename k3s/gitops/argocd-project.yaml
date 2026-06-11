@@ -10,12 +10,15 @@ spec:
   destinations:
   - namespace: mardan-smart-city
     server: https://kubernetes.default.svc
-  # Sirf yeh namespace-scoped resources allow hain
+  - namespace: monitoring
+    server: https://kubernetes.default.svc
   namespaceResourceWhitelist:
   - group: 'apps'
     kind: 'Deployment'
   - group: 'apps'
     kind: 'StatefulSet'
+  - group: 'apps'
+    kind: 'DaemonSet'
   - group: ''
     kind: 'Service'
   - group: ''
@@ -42,11 +45,9 @@ spec:
     kind: 'SealedSecret'
   - group: 'traefik.io'
     kind: 'Middleware'
-  # Sirf yeh cluster-scoped resources allow hain
   clusterResourceWhitelist:
   - group: ''
     kind: 'Namespace'
-  # Sirf read access ArgoCD ko
   roles:
   - name: read-only
     description: Read only access
