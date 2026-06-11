@@ -33,7 +33,7 @@ spec:
           type: RuntimeDefault
       containers:
       - name: frontend
-        image: shoaibikhandev/mardan-frontend:524d6da92efa9e0c6b90a07ae61342296e3c8a57
+        image: shoaibikhandev/mardan-frontend:ce906e7ce360c6f5ac01f0528da6faafd5b64c75
         imagePullPolicy: Always
         securityContext:
           allowPrivilegeEscalation: false
