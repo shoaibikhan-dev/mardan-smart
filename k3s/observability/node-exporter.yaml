@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: node-exporter
-  namespace: mardan-smart-city
+  namespace: monitoring
 spec:
   selector:
     matchLabels:
@@ -13,11 +13,6 @@ spec:
         app: node-exporter
     spec:
       automountServiceAccountToken: false
-      securityContext:
-        runAsNonRoot: true
-        runAsUser: 65534
-        seccompProfile:
-          type: RuntimeDefault
       hostPID: true
       hostNetwork: true
       containers:
