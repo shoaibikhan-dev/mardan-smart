@@ -45,3 +45,4 @@ yarn-debug.log*
 yarn-error.log*
 k3s/kubeseal
 k3s/kubeseal-*.tar.gz
+cosign.key

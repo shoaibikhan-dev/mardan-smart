@@ -72,3 +72,18 @@ jobs:
           git add k3s/deployments/frontend-deployment.yaml
           git commit -m "ci: update images to ${{ github.sha }}"
           git push
+      - name: Sign Backend Image
+        env:
+          COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+        run: |
+          cosign sign --key env://COSIGN_PRIVATE_KEY \
+            ${{ secrets.DOCKERUSERNAME }}/mardan-backend:${{ github.sha }}
+
+      - name: Sign Frontend Image
+        env:
+          COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+        run: |
+          cosign sign --key env://COSIGN_PRIVATE_KEY \
+            ${{ secrets.DOCKERUSERNAME }}/mardan-frontend:${{ github.sha }}
