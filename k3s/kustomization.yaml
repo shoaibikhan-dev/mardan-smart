@@ -18,6 +18,7 @@ resources:
   - reliability/backend-pdb.yaml
   - reliability/frontend-pdb.yaml
   - reliability/postgres-backup-cronjob.yaml
+  - deployments/pgbouncer-deployment.yaml
   - deployments/postgres-deployment.yaml
   - deployments/redis-deployment.yaml
   - deployments/backend-deployment.yaml

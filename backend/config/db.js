@@ -13,7 +13,7 @@ if (process.env.DATABASE_URL) {
         : { require: true, rejectUnauthorized: false },
     },
     logging: false,
-    pool: { max: 8, min: 2, acquire: 30000, idle: 10000 },
+    pool: { max: 25, min: 2, acquire: 30000, idle: 10000 },
   });
 } else {
   sequelize = new Sequelize(
@@ -25,7 +25,7 @@ if (process.env.DATABASE_URL) {
       port:    parseInt(process.env.DB_PORT || '5432'),
       dialect: 'postgres',
       logging: false,
-      pool: { max: 8, min: 2, acquire: 30000, idle: 10000 },
+      pool: { max: 25, min: 2, acquire: 30000, idle: 10000 },
     }
   );
 }

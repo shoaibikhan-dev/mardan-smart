@@ -10,7 +10,7 @@ data:
   REDIS_URL: "redis://redis:6379"
   REDIS_HOST: "redis"
   REDIS_PORT: "6379"
-  DB_HOST: "postgres"
+  DB_HOST: "pgbouncer"
   DB_PORT: "5432"
   DB_NAME: "mardan_smart_city"
   DB_USER: "postgres"
