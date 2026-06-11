@@ -67,16 +67,16 @@ jobs:
 
       - name: Sign Backend Image
         env:
-          COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
-          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+          COSIGN_PRIVATE_KEY: ${{ secrets.COSIGNPRIVATEKEY }}
+          COSIGN_PASSWORD: ${{ secrets.COSIGNPASSWORD }}
         run: |
           cosign sign --key env://COSIGN_PRIVATE_KEY --yes \
             ${{ secrets.DOCKERUSERNAME }}/mardan-backend:${{ github.sha }}
 
       - name: Sign Frontend Image
         env:
-          COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
-          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+          COSIGN_PRIVATE_KEY: ${{ secrets.COSIGNPRIVATEKEY }}
+          COSIGN_PASSWORD: ${{ secrets.COSIGNPASSWORD }}
         run: |
           cosign sign --key env://COSIGN_PRIVATE_KEY --yes \
             ${{ secrets.DOCKERUSERNAME }}/mardan-frontend:${{ github.sha }}
