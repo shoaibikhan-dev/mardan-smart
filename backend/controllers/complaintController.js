@@ -175,7 +175,7 @@ exports.trackComplaint = async (req, res) => {
 
 exports.getUserComplaints = async (req, res) => {
   try {
-    const cacheKey = `complaints:user:${req.user.id}:${JSON.stringify(req.query)}`;
+    const cacheKey = `complaints:user:${req.user.id}`;
     const cached = await redisClient.get(cacheKey);
     if (cached) return res.json(JSON.parse(cached));
     const { status, category, page = 1, limit = 20 } = req.query;
@@ -187,7 +187,7 @@ exports.getUserComplaints = async (req, res) => {
       limit: parseInt(limit), offset: (parseInt(page) - 1) * parseInt(limit),
     });
     const result = { success: true, total: count, page: parseInt(page), totalPages: Math.ceil(count / parseInt(limit)), data: rows };
-    await redisClient.set(cacheKey, JSON.stringify(result), 'EX', 120);
+    await redisClient.set(cacheKey, JSON.stringify(result), 'EX', 600);
     res.json(result);
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
