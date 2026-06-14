@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: backend-error-rate
+  namespace: mardan-smart-city
+spec:
+  metrics:
+  - name: error-rate
+    interval: 30s
+    failureLimit: 3
+    successCondition: result < 0.05
+    provider:
+      prometheus:
+        address: http://prometheus:9090
+        query: |
+          sum(rate(http_requests_total{status=~"5..",app="backend"}[2m]))
+          /
+          sum(rate(http_requests_total{app="backend"}[2m]))
