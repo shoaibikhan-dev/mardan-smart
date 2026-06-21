@@ -25,7 +25,7 @@ spec:
           app: pgbouncer
     ports:
     - protocol: TCP
-      port: 6432
+      port: 5432
   - to:
     - podSelector:
         matchLabels:
