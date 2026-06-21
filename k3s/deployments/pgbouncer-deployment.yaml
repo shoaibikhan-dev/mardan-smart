@@ -36,15 +36,15 @@ spec:
         - containerPort: 6432
           name: postgres
         env:
-        - name: DATABASES_HOST
+        - name: DB_HOST
           value: postgres.mardan-smart-city.svc.cluster.local
-        - name: DATABASES_PORT
+        - name: DB_PORT
           value: "5432"
-        - name: DATABASES_DBNAME
+        - name: DB_NAME
           value: mardan_smart_city
-        - name: DATABASES_USER
+        - name: DB_USER
           value: postgres
-        - name: DATABASES_PASSWORD
+        - name: DB_PASSWORD
           valueFrom:
             secretKeyRef:
               name: postgres-secrets
