@@ -33,7 +33,7 @@ spec:
           type: RuntimeDefault
       containers:
       - name: backend
-        image: shoaibikhandev/mardan-backend:1ae29a5fe7177b2acfbbb5e65ba5524da85ff7ff
+        image: shoaibikhandev/mardan-backend:58dfb50d4b4deb1c22876a92bb1a4bb80bc01e20
         imagePullPolicy: Always
         securityContext:
           allowPrivilegeEscalation: false
