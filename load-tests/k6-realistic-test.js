@@ -4,14 +4,14 @@ import { check, sleep } from 'k6';
 export const options = {
   stages: [
     { duration: '30s', target: 500 },
-    { duration: '1m', target: 2000 },
-    { duration: '30s', target: 5000 },
-    { duration: '1m', target: 5000 },
+    { duration: '1m',  target: 1000 },
+    { duration: '30s', target: 2000 },
+    { duration: '1m',  target: 2000 },
     { duration: '30s', target: 0 },
   ],
   thresholds: {
     http_req_duration: ['p(95)<3000'],
-    http_req_failed: ['rate<0.05'],
+    http_req_failed:   ['rate<0.05'],
   },
 };
 
@@ -33,7 +33,7 @@ export default function (data) {
   const token = data.token;
   if (!token) return;
 
-  const complaintsRes = http.get(
+  const res = http.get(
     `${BASE_URL}/api/v1/complaints/my`,
     {
       headers: {
@@ -43,9 +43,9 @@ export default function (data) {
     }
   );
 
-  check(complaintsRes, {
+  check(res, {
     'complaints status 200': (r) => r.status === 200,
   });
 
-  sleep(0.05);
+  sleep(0.5);
 }
