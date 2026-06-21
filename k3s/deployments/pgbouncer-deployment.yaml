@@ -29,7 +29,7 @@ spec:
         image: edoburu/pgbouncer:latest
         securityContext:
           allowPrivilegeEscalation: false
-          readOnlyRootFilesystem: true
+          readOnlyRootFilesystem: false
           capabilities:
             drop: ["ALL"]
         ports:
@@ -87,12 +87,8 @@ spec:
           mountPath: /tmp
         - name: run-volume
           mountPath: /var/run
-        - name: pgbouncer-config
-          mountPath: /etc/pgbouncer
       volumes:
       - name: tmp-volume
         emptyDir: {}
       - name: run-volume
-        emptyDir: {}
-      - name: pgbouncer-config
         emptyDir: {}
